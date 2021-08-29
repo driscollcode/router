@@ -1,6 +1,7 @@
 package router
 
 import (
+	"encoding/json"
 	"io/ioutil"
 	"net/http"
 	"strings"
@@ -174,6 +175,14 @@ func (r *Request) SuccessWithMsg(msg string) Response {
 
 func (r *Request) SuccessWithBytes(content []byte) Response {
 	return Response{StatusCode: http.StatusOK, Content: content}
+}
+
+func (r *Request) SuccessWithJson(content interface{}) Response {
+	bytes, err := json.Marshal(content)
+	if err != nil {
+		return Response{StatusCode: http.StatusInternalServerError, Content: []byte("Unable to convert server response to JSON")}
+	}
+	return Response{StatusCode: http.StatusOK, Content: bytes}
 }
 
 func (r *Request) Body() []byte {
