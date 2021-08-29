@@ -13,9 +13,18 @@ type Base struct {
 	TimeZone Timezone
 }
 
-func (b *Base) Setup(projectID, timeZone string) {
+func (b *Base) Setup() {
 	b.Log = &log.Log{}
 	b.Params = &parameters.Params{}
-	b.Db = fireStore.New(projectID)
-	b.TimeZone = newTimeZone(timeZone)
+
+	if len(b.Params.String("ProjectID")) < 1 {
+		b.Log.Error("Handler Base : Setup was called without a ProjectID environment variable")
+	}
+
+	if len(b.Params.String("TimeZone")) < 1 {
+		b.Log.Error("Handler Base : Setup was called without a TimeZone environment variable")
+	}
+
+	b.Db = fireStore.New(b.Params.String("ProjectID"))
+	b.TimeZone = newTimeZone(b.Params.String("TimeZone"))
 }
