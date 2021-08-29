@@ -1,4 +1,4 @@
-module router
+module github.com/driscollcode/router
 
 go 1.16
 
