@@ -17,6 +17,7 @@ type Log interface {
 type Database interface {
 	Delete(filename string) error
 	Fetch(filename string, destination interface{}) error
+	FetchAll(path string, template interface{}) (map[string]interface{}, error)
 	Search(path string, queries ...fireStore.Query) ([]*FireStore.DocumentSnapshot, error)
 	SearchOne(container interface{}, path string, queries ...fireStore.Query) error
 	SearchOneRaw(path string, queries ...fireStore.Query) (map[string]interface{}, error)
