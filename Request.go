@@ -161,7 +161,7 @@ func (r *Request) Error(msg string) Response {
 	return Response{StatusCode: http.StatusBadRequest, Content: []byte(msg)}
 }
 
-func (r *Request) CustomError(statusCode int, msg string) Response {
+func (r *Request) CustomResponse(statusCode int, msg string) Response {
 	return Response{StatusCode: statusCode, Content: []byte(msg)}
 }
 
