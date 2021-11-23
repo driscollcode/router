@@ -59,8 +59,8 @@ github.com/cncf/udpa/go v0.0.0-20200629203442-efcf912fb354/go.mod h1:WmhPx2Nbnht
 github.com/cncf/udpa/go v0.0.0-20201120205902-5459f2c99403/go.mod h1:WmhPx2Nbnhtbo57+VJT5O0JRkEi1Wbu0z5j0R8u5Hbk=
 github.com/cncf/xds/go v0.0.0-20210312221358-fbca930ec8ed/go.mod h1:eXthEFrGJvWHgFFCl3hGmgk+/aYT6PnTQLykKQRLhEs=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
-github.com/driscollcode/firestore v1.3.0 h1:V3forsHRdX/RUwXCnAft9ejrdZCHm+PcVP/UzERC7Ko=
-github.com/driscollcode/firestore v1.3.0/go.mod h1:q2kErRljxeC/f7YnTiw5dRYbSqm/XP/DX5JY+Jli5Ws=
+github.com/driscollcode/firestore v1.4.1 h1:kRUyiMl1eAdBkirJwcWdBUqd126sp4uyFqwhRs0BgDc=
+github.com/driscollcode/firestore v1.4.1/go.mod h1:q2kErRljxeC/f7YnTiw5dRYbSqm/XP/DX5JY+Jli5Ws=
 github.com/driscollcode/log v0.0.0-20210611125234-19985c7d1954 h1:kzRk00IVOO22BgIN/rPaLGNRm3HyQJcjJtScVM0jfxU=
 github.com/driscollcode/log v0.0.0-20210611125234-19985c7d1954/go.mod h1:XCn7B5+oPQe1kx+kEbQshmeIqNcU4uHuhh1hwMmRXy4=
 github.com/driscollcode/parameters v1.1.1 h1:M9405uowWL4iJWKzREHlU6Xr9oWyBefJhCwnztdqWbA=
