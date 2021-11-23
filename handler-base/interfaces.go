@@ -21,6 +21,7 @@ type Database interface {
 	Search(path string, queries ...fireStore.Query) ([]*FireStore.DocumentSnapshot, error)
 	SearchOne(container interface{}, path string, queries ...fireStore.Query) error
 	SearchOneRaw(path string, queries ...fireStore.Query) (map[string]interface{}, error)
+	Update(path string, values map[string]interface{}) error
 	Write(path string, object interface{}) error
 }
 
