@@ -213,6 +213,10 @@ func (r *Request) processBody() {
 }
 
 func (r *Request) getResponseBody(response interface{}) []byte {
+	if response == nil {
+		return nil
+	}
+
 	switch reflect.ValueOf(response).Kind() {
 	case reflect.Struct:
 		if bytes, err := json.Marshal(response); err == nil {
