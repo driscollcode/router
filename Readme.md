@@ -18,8 +18,8 @@ func main() {
 }
 
 func getUser(request router.Request) router.Response {
-	if !request.ArgExists("name") {
-		return request.Error("Name parameter is missing")
+    if !request.ArgExists("name") {
+        return request.Error("Name parameter is missing")
     }
     
     // fetch user from somewhere
