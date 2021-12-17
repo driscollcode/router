@@ -9,6 +9,7 @@ import (
 	"net/http/httptest"
 	"reflect"
 	"strings"
+	"time"
 )
 
 func CreateRequest(method, path string, body []byte, params map[string]string) Request {
@@ -219,6 +220,10 @@ func (r *Request) getResponseBody(response interface{}) []byte {
 
 	switch reflect.ValueOf(response).Kind() {
 	case reflect.Struct:
+		if _, ok := response.(time.Time); ok {
+			return []byte(response.(time.Time).Format("2006-01-02 15:04:05"))
+		}
+
 		if bytes, err := json.Marshal(response); err == nil {
 			return bytes
 		}
