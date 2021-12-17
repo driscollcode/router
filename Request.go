@@ -1,14 +1,19 @@
 package router
 
 import (
+	"bytes"
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
+	"net/http/httptest"
 	"strings"
 )
 
-// Use this function to simulate incoming HTTP / Cloud Function requests
-func TestRequest(request *http.Request, params map[string]string) Request {
+func CreateRequest(method, path string, body []byte, params map[string]string) Request {
+	return Request{input: httptest.NewRequest(method, path, bytes.NewReader(body)), output: nil, args: params, URL: path}
+}
+
+func CreateRequestAdvanced(request *http.Request, params map[string]string) Request {
 	return Request{input: request, output: nil, args: params, Host: request.Host, URL: request.URL.Path, UserAgent: request.Header.Get("User-Agent")}
 }
 
@@ -17,7 +22,11 @@ type Request struct {
 	output               http.ResponseWriter
 	args                 map[string]string
 	Host, URL, UserAgent string
-	body                 []byte
+	body struct {
+		content []byte
+		error error
+		processed bool
+	}
 }
 
 func (r *Request) ArgExists(name string) bool {
@@ -139,7 +148,7 @@ func (r *Request) GetBrowser() string {
 	return "Unknown"
 }
 
-func (r *Request) Referer() string {
+func (r *Request) GetReferer() string {
 	return r.input.Referer()
 }
 
@@ -186,38 +195,25 @@ func (r *Request) SuccessWithJson(content interface{}) Response {
 }
 
 func (r *Request) Body() []byte {
-	if len(r.body) > 0 {
-		return r.body
-	}
-
-	bytes, err := ioutil.ReadAll(r.input.Body)
-
-	if err != nil {
-		return nil
-	}
-
-	r.body = bytes
-	return bytes
+	r.processBody()
+	return r.body.content
 }
 
 func (r *Request) BodyError() error {
-	body, err := ioutil.ReadAll(r.input.Body)
-
-	if err != nil {
-		return err
-	}
-
-	r.body = body
-	return nil
+	r.processBody()
+	return r.body.error
 }
 
 func (r *Request) HasBody() bool {
-	body, err := ioutil.ReadAll(r.input.Body)
+	r.processBody()
+	return len(r.body.content) > 0
+}
 
-	if err != nil || len(body) < 1 {
-		return false
+func (r *Request) processBody() {
+	if r.body.processed {
+		return
 	}
 
-	r.body = body
-	return true
+	r.body.content, r.body.error = ioutil.ReadAll(r.input.Body)
+	r.body.processed = true
 }

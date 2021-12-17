@@ -2,6 +2,7 @@ package router
 
 import (
 	"errors"
+	"fmt"
 	"github.com/driscollcode/log"
 	"net/http"
 	"os"
@@ -54,10 +55,16 @@ func (r *Router) url(method, path string, handler handler) {
 	r.routes = append(r.routes, route{Method: method, Path: path, Handler: handler})
 }
 
-func (rt *Router) Server(ipPort string) {
-	err := http.ListenAndServe(ipPort, rt)
+func (rt *Router) Serve(port int) {
+	err := http.ListenAndServe(fmt.Sprintf(":%d", port), rt)
 	log := log.Log{}
-	log.Error("Router (Server) - Error from ListenAndServe :", err.Error())
+	log.Error("Router - error from ListenAndServe :", err.Error())
+}
+
+func (rt *Router) ServeIP(ip string, port int) {
+	err := http.ListenAndServe(fmt.Sprintf("%s:%d", ip, port), rt)
+	log := log.Log{}
+	log.Error("Router - error from ListenAndServe :", err.Error())
 }
 
 func (rt *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
