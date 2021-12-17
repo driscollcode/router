@@ -3,9 +3,11 @@ package router
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
+	"reflect"
 	"strings"
 )
 
@@ -166,32 +168,24 @@ func (r *Request) PermanentRedirect(destination string) Response {
 	return response
 }
 
-func (r *Request) Error(msg string) Response {
-	return Response{StatusCode: http.StatusBadRequest, Content: []byte(msg)}
+func (r *Request) Error(response interface{}) Response {
+	return Response{StatusCode: http.StatusBadRequest, Content: r.getResponseBody(response)}
 }
 
-func (r *Request) CustomResponse(statusCode int, msg string) Response {
-	return Response{StatusCode: statusCode, Content: []byte(msg)}
+func (r *Request) CustomResponse(statusCode int, response interface{}) Response {
+	return Response{StatusCode: statusCode, Content: r.getResponseBody(response)}
 }
 
-func (r *Request) Success() Response {
-	return Response{StatusCode: http.StatusOK}
+func (r *Request) Success(response interface{}) Response {
+	return Response{StatusCode: http.StatusOK, Content: r.getResponseBody(response)}
 }
 
-func (r *Request) SuccessWithMsg(msg string) Response {
-	return Response{StatusCode: http.StatusOK, Content: []byte(msg)}
+func (r *Request) Created(response interface{}) Response {
+	return Response{StatusCode: http.StatusCreated, Content: r.getResponseBody(response)}
 }
 
-func (r *Request) SuccessWithBytes(content []byte) Response {
-	return Response{StatusCode: http.StatusOK, Content: content}
-}
-
-func (r *Request) SuccessWithJson(content interface{}) Response {
-	bytes, err := json.Marshal(content)
-	if err != nil {
-		return Response{StatusCode: http.StatusInternalServerError, Content: []byte("Unable to convert server response to JSON")}
-	}
-	return Response{StatusCode: http.StatusOK, Content: bytes}
+func (r *Request) Accepted(response interface{}) Response {
+	return Response{StatusCode: http.StatusAccepted, Content: r.getResponseBody(response)}
 }
 
 func (r *Request) Body() []byte {
@@ -216,4 +210,19 @@ func (r *Request) processBody() {
 
 	r.body.content, r.body.error = ioutil.ReadAll(r.input.Body)
 	r.body.processed = true
+}
+
+func (r *Request) getResponseBody(response interface{}) []byte {
+	switch reflect.ValueOf(response).Kind() {
+	case reflect.Struct:
+		if bytes, err := json.Marshal(response); err == nil {
+			return bytes
+		}
+	case reflect.Slice:
+		if _, ok := response.([]byte); ok {
+			return response.([]byte)
+		}
+	}
+
+	return []byte(fmt.Sprintf("%v", response))
 }

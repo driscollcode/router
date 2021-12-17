@@ -26,7 +26,7 @@ func getUser(request router.Request) router.Response {
     user := struct{Name string}{Name: "John"}
     
     // Automatically send out a struct as the response body with a 200 status code
-    return request.SuccessWithJson(user)
+    return request.Success(user)
 }
 ```
 
@@ -34,12 +34,11 @@ func getUser(request router.Request) router.Response {
 
 The following functions are part of the ``Request`` struct and can be the return value of a handler function.
 
-* ``CustomResponse(statusCode int, msg string)`` A custom response with the supplied HTTP status code and string body
-* ``Error(msg string)`` - HTTP 400 (Bad Request) response with the supplied message
-* ``Success()`` - HTTP 200 OK response with no body
-* ``SuccessWithMsg(msg string)`` - HTTP 200 OK response with the supplied text body
-* ``SuccessWithBytes(content []byte)`` - HTTP 200 OK response with supplied byte slice content
-* ``SuccessWithJson(content interface{})`` - HTTP 200 OK response with supplied content as json
+* ``CustomResponse(statusCode int, response interface{})`` A custom response with the supplied HTTP status code and content
+* ``Error(response interface{})`` - HTTP 400 (Bad Request) response with the supplied content
+* ``Success(response interface{})`` - HTTP 200 OK response with the supplied content
+* ``Created(response interface{})`` - HTTP 201 Created response with the supplied content
+* ``Accepted(response interface{})`` - HTTP 202 Accepted response with the supplied content
 
 You can also perform a quick redirect with these functions.
 
