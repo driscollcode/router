@@ -1,10 +1,12 @@
 package router
 
 import (
+	"bytes"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"time"
 )
 
@@ -83,6 +85,173 @@ var _ = Describe("Router unit tests", func() {
 
 				response := func(request Request) Response {
 					return request.Success(request.GetArg("unsetParameter"))
+				}(req)
+
+				Expect(response.Content).To(Equal([]byte("")))
+			})
+		})
+	})
+
+	Context("Request information", func() {
+		When("the GetURL method is called", func() {
+			It("should return the url of the request", func() {
+				req := CreateRequest("GET", "/this/is/the/url", nil, nil)
+
+				response := func(request Request) Response {
+					return request.Success(request.GetURL())
+				}(req)
+
+				Expect(response.Content).To(Equal([]byte("/this/is/the/url")))
+			})
+		})
+
+		When("the GetIP method is called", func() {
+			It("should return the X-Forwarded-For header if it is present", func() {
+				r := httptest.NewRequest("GET", "/", nil)
+				r.Header.Set("X-Forwarded-For", "127.0.0.1")
+				req := CreateRequestAdvanced(r, nil)
+
+				response := func(request Request) Response {
+					return request.Success(request.GetIP())
+				}(req)
+
+				Expect(response.Content).To(Equal([]byte("127.0.0.1")))
+			})
+
+			It("should return the RemoteAddr request property if the X-Forwarded-For header is not present", func() {
+				r := httptest.NewRequest("GET", "/", nil)
+				r.RemoteAddr = "127.0.0.2"
+				req := CreateRequestAdvanced(r, nil)
+
+				response := func(request Request) Response {
+					return request.Success(request.GetIP())
+				}(req)
+
+				Expect(response.Content).To(Equal([]byte("127.0.0.2")))
+			})
+		})
+	})
+
+	Context("POST data", func() {
+		When("the PostVariableExists method is called", func() {
+			It("should return true if the specified post variable is present", func() {
+				values := url.Values{}
+				values.Set("post-data", "set")
+				r := httptest.NewRequest("POST", "/", bytes.NewBufferString(values.Encode()))
+				r.Header.Set("Content-Type", "application/x-www-form-urlencoded; param=value")
+				req := CreateRequestAdvanced(r, nil)
+
+				response := func(request Request) Response {
+					return request.Success(request.PostVariableExists("post-data"))
+				}(req)
+
+				Expect(response.Content).To(Equal([]byte("true")))
+			})
+
+			It("should return false if the specified post variable is not present", func() {
+				values := url.Values{}
+				values.Set("post-data", "set")
+				r := httptest.NewRequest("POST", "/", bytes.NewBufferString(values.Encode()))
+				r.Header.Set("Content-Type", "application/x-www-form-urlencoded; param=value")
+				req := CreateRequestAdvanced(r, nil)
+
+				response := func(request Request) Response {
+					return request.Success(request.PostVariableExists("unset-post-variable"))
+				}(req)
+
+				Expect(response.Content).To(Equal([]byte("false")))
+			})
+
+			It("should return false when HasBody() is called and there is no post body", func() {
+				values := url.Values{}
+				r := httptest.NewRequest("POST", "/", bytes.NewBufferString(values.Encode()))
+				r.Header.Set("Content-Type", "application/x-www-form-urlencoded; param=value")
+				req := CreateRequestAdvanced(r, nil)
+
+				response := func(request Request) Response {
+					return request.Success(request.HasBody())
+				}(req)
+
+				Expect(response.Content).To(Equal([]byte("false")))
+			})
+
+			It("should return true when HasBody() is called and there is a post body", func() {
+				values := url.Values{}
+				values.Set("post-data", "set")
+				r := httptest.NewRequest("POST", "/", bytes.NewBufferString(values.Encode()))
+				r.Header.Set("Content-Type", "application/x-www-form-urlencoded; param=value")
+				req := CreateRequestAdvanced(r, nil)
+
+				response := func(request Request) Response {
+					return request.Success(request.HasBody())
+				}(req)
+
+				Expect(response.Content).To(Equal([]byte("true")))
+			})
+
+			It("should return a byte slice when the post body is requested via the Body() method", func() {
+				values := url.Values{}
+				values.Set("post-data", "set")
+				r := httptest.NewRequest("POST", "/", bytes.NewBufferString(values.Encode()))
+				r.Header.Set("Content-Type", "application/x-www-form-urlencoded; param=value")
+				req := CreateRequestAdvanced(r, nil)
+
+				response := func(request Request) Response {
+					return request.Success(request.Body())
+				}(req)
+
+				Expect(response.Content).To(Equal([]byte("post-data=set")))
+			})
+
+			It("should return an empty byte slice via the Body() method when there is no post body", func() {
+				values := url.Values{}
+				r := httptest.NewRequest("POST", "/", bytes.NewBufferString(values.Encode()))
+				r.Header.Set("Content-Type", "application/x-www-form-urlencoded; param=value")
+				req := CreateRequestAdvanced(r, nil)
+
+				response := func(request Request) Response {
+					return request.Success(request.Body())
+				}(req)
+
+				Expect(response.Content).To(Equal([]byte("")))
+			})
+
+			It("should return a nil error when BodyError() is called as it is very hard to trip this error", func() {
+				r := httptest.NewRequest("GET", "/", nil)
+				req := CreateRequestAdvanced(r, nil)
+
+				response := func(request Request) Response {
+					return request.Success(request.BodyError())
+				}(req)
+
+				Expect(response.Content).To(Equal([]byte("")))
+			})
+		})
+
+		When("the GetPostVariable method is called", func() {
+			It("should return the requested post variable as a string if it is present", func() {
+				values := url.Values{}
+				values.Set("post-data", "set")
+				r := httptest.NewRequest("POST", "/", bytes.NewBufferString(values.Encode()))
+				r.Header.Set("Content-Type", "application/x-www-form-urlencoded; param=value")
+				req := CreateRequestAdvanced(r, nil)
+
+				response := func(request Request) Response {
+					return request.Success(request.GetPostVariable("post-data"))
+				}(req)
+
+				Expect(response.Content).To(Equal([]byte("set")))
+			})
+
+			It("should return an empty string if the value is not present", func() {
+				values := url.Values{}
+				values.Set("post-data", "set")
+				r := httptest.NewRequest("POST", "/", bytes.NewBufferString(values.Encode()))
+				r.Header.Set("Content-Type", "application/x-www-form-urlencoded; param=value")
+				req := CreateRequestAdvanced(r, nil)
+
+				response := func(request Request) Response {
+					return request.Success(request.GetPostVariable("unset-post-variable"))
 				}(req)
 
 				Expect(response.Content).To(Equal([]byte("")))

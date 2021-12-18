@@ -21,35 +21,168 @@ var _ = Describe("Router unit tests", func() {
 	})
 
 	Context("Basic request matching", func() {
-		When("the router is matching a basic route with a specific method", func() {
+		When("the router is matching a route to a handler", func() {
+			When("the method is GET", func() {
+				It("should pair a matching request to the appropriate GET handler", func() {
+					router.Get("/", func(request Request) Response {
+						return request.Success("OK")
+					})
 
-			handlerFunc := func(request Request) Response {
-				return request.Success("OK")
-			}
-
-			for _, method := range []string{"GET", "POST", "PUT", "PATCH", "DELETE"} {
-				It("should match " + method + " requests", func() {
-					switch method {
-					case "GET":
-						router.Get("/", handlerFunc)
-					case "POST":
-						router.Post("/", handlerFunc)
-					case "PUT":
-						router.Put("/", handlerFunc)
-					case "PATCH":
-						router.Patch("/", handlerFunc)
-					case "DELETE":
-						router.Delete("/", handlerFunc)
-					}
-
-					r := httptest.NewRequest(method, "/", nil)
+					r := httptest.NewRequest("GET", "/", nil)
 					w := httptest.NewRecorder()
 					router.ServeHTTP(w, r)
 
 					Expect(w.Result().StatusCode).To(Equal(200))
 					Expect(w.Body.String()).To(Equal("OK"))
 				})
-			}
+
+				It("should not pair a matching request to the GET handler if the method is not GET", func() {
+					router.Get("/", func(request Request) Response {
+						return request.Success("OK")
+					})
+
+					r := httptest.NewRequest("POST", "/", nil)
+					w := httptest.NewRecorder()
+					router.ServeHTTP(w, r)
+
+					Expect(w.Result().StatusCode).To(Equal(404))
+				})
+			})
+
+			When("the method is POST", func() {
+				It("should pair a matching request to the appropriate POST handler", func() {
+					router.Post("/", func(request Request) Response {
+						return request.Success("OK")
+					})
+
+					r := httptest.NewRequest("POST", "/", nil)
+					w := httptest.NewRecorder()
+					router.ServeHTTP(w, r)
+
+					Expect(w.Result().StatusCode).To(Equal(200))
+					Expect(w.Body.String()).To(Equal("OK"))
+				})
+
+				It("should not pair a matching request to the POST handler if the method is not POST", func() {
+					router.Post("/", func(request Request) Response {
+						return request.Success("OK")
+					})
+
+					r := httptest.NewRequest("GET", "/", nil)
+					w := httptest.NewRecorder()
+					router.ServeHTTP(w, r)
+
+					Expect(w.Result().StatusCode).To(Equal(404))
+				})
+			})
+
+			When("the method is PUT", func() {
+				It("should pair a matching request to the appropriate PUT handler", func() {
+					router.Put("/", func(request Request) Response {
+						return request.Success("OK")
+					})
+
+					r := httptest.NewRequest("PUT", "/", nil)
+					w := httptest.NewRecorder()
+					router.ServeHTTP(w, r)
+
+					Expect(w.Result().StatusCode).To(Equal(200))
+					Expect(w.Body.String()).To(Equal("OK"))
+				})
+
+				It("should not pair a matching request to the PUT handler if the method is not PUT", func() {
+					router.Put("/", func(request Request) Response {
+						return request.Success("OK")
+					})
+
+					r := httptest.NewRequest("POST", "/", nil)
+					w := httptest.NewRecorder()
+					router.ServeHTTP(w, r)
+
+					Expect(w.Result().StatusCode).To(Equal(404))
+				})
+			})
+
+			When("the method is PATCH", func() {
+				It("should pair a matching request to the appropriate PATCH handler", func() {
+					router.Patch("/", func(request Request) Response {
+						return request.Success("OK")
+					})
+
+					r := httptest.NewRequest("PATCH", "/", nil)
+					w := httptest.NewRecorder()
+					router.ServeHTTP(w, r)
+
+					Expect(w.Result().StatusCode).To(Equal(200))
+					Expect(w.Body.String()).To(Equal("OK"))
+				})
+
+				It("should not pair a matching request to the PATCH handler if the method is not PATCH}", func() {
+					router.Patch("/", func(request Request) Response {
+						return request.Success("OK")
+					})
+
+					r := httptest.NewRequest("POST", "/", nil)
+					w := httptest.NewRecorder()
+					router.ServeHTTP(w, r)
+
+					Expect(w.Result().StatusCode).To(Equal(404))
+				})
+			})
+
+			When("the method is DELETE", func() {
+				It("should pair a matching request to the appropriate DELETE handler", func() {
+					router.Delete("/", func(request Request) Response {
+						return request.Success("OK")
+					})
+
+					r := httptest.NewRequest("DELETE", "/", nil)
+					w := httptest.NewRecorder()
+					router.ServeHTTP(w, r)
+
+					Expect(w.Result().StatusCode).To(Equal(200))
+					Expect(w.Body.String()).To(Equal("OK"))
+				})
+
+				It("should not pair a matching request to the DELETE handler if the method is not DELETE", func() {
+					router.Delete("/", func(request Request) Response {
+						return request.Success("OK")
+					})
+
+					r := httptest.NewRequest("POST", "/", nil)
+					w := httptest.NewRecorder()
+					router.ServeHTTP(w, r)
+
+					Expect(w.Result().StatusCode).To(Equal(404))
+				})
+			})
+
+			When("the method is arbritary", func() {
+				It("should pair a matching request to the appropriate handler", func() {
+					router.Route("CUSTOM", "/", func(request Request) Response {
+						return request.Success("OK")
+					})
+
+					r := httptest.NewRequest("CUSTOM", "/", nil)
+					w := httptest.NewRecorder()
+					router.ServeHTTP(w, r)
+
+					Expect(w.Result().StatusCode).To(Equal(200))
+					Expect(w.Body.String()).To(Equal("OK"))
+				})
+
+				It("should not pair a matching request to the handler if the method is not the right one", func() {
+					router.Route("CUSTOM", "/", func(request Request) Response {
+						return request.Success("OK")
+					})
+
+					r := httptest.NewRequest("POST", "/", nil)
+					w := httptest.NewRecorder()
+					router.ServeHTTP(w, r)
+
+					Expect(w.Result().StatusCode).To(Equal(404))
+				})
+			})
 		})
 
 		When("the router is given a defined route", func() {
@@ -99,6 +232,23 @@ var _ = Describe("Router unit tests", func() {
 
 				Expect(w.Result().StatusCode).To(Equal(200))
 				Expect(w.Body.String()).To(Equal("working"))
+			})
+		})
+
+		When("the router is given a URL prefix via the Root() method", func() {
+			It("should store the URL prefix to attach to any other routes", func() {
+				router.Get("/here", func(request Request) Response {
+					return request.Success("OK")
+				})
+
+				router.Root("/my/url/prefix")
+
+				r := httptest.NewRequest("GET", "/my/url/prefix/here", nil)
+				w := httptest.NewRecorder()
+				router.ServeHTTP(w, r)
+
+				Expect(w.Result().StatusCode).To(Equal(http.StatusOK))
+				Expect(w.Body.String()).To(Equal("OK"))
 			})
 		})
 
