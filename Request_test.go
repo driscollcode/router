@@ -153,6 +153,51 @@ var _ = Describe("Router unit tests", func() {
 		})
 	})
 
+	Context("Responses which perform a redirect", func() {
+		When("the handler triggers a temporary redirect", func() {
+			It("serves up a HTTP 302 status response", func() {
+				req := CreateRequest("GET", "/", nil, nil)
+
+				response := func(request Request) Response {
+					return request.Redirect("/moved")
+				}(req)
+
+				Expect(response.StatusCode).To(Equal(302))
+				Expect(response.Redirect.Destination).To(Equal("/moved"))
+			})
+		})
+
+		When("the handler triggers a permanent redirect", func() {
+			It("serves up a HTTP 301 status response", func() {
+				req := CreateRequest("GET", "/", nil, nil)
+
+				response := func(request Request) Response {
+					return request.PermanentRedirect("/moved permanently")
+				}(req)
+
+				Expect(response.StatusCode).To(Equal(301))
+				Expect(response.Redirect.Destination).To(Equal("/moved permanently"))
+			})
+		})
+	})
+
+	Context("Obtaining the Referer header", func() {
+		When("the handler calls the GetReferer() method", func() {
+			It("responds with the referer header when it is set", func() {
+				r := httptest.NewRequest("GET", "/", nil)
+				r.Header.Set("Referer", "https://example.org")
+				req := CreateRequestAdvanced(r, nil)
+
+				response := func(request Request) Response {
+					return request.Success(request.GetReferer())
+				}(req)
+
+				Expect(response.StatusCode).To(Equal(http.StatusOK))
+				Expect(response.Content).To(Equal([]byte("https://example.org")))
+			})
+		})
+	})
+
 	Context("Returns from multiple formats of variables", func() {
 		When("the handler returns nil", func() {
 			It("serves up a byte slice containing nil", func() {
@@ -235,6 +280,18 @@ var _ = Describe("Router unit tests", func() {
 				}(req)
 
 				Expect(response.Content).To(Equal([]byte(`{"Status":"success"}`)))
+			})
+		})
+
+		When("the handler returns a byte slice", func() {
+			It("serves up the byte slice directly", func() {
+				req := CreateRequest("GET", "/", nil, nil)
+
+				response := func(request Request) Response {
+					return request.Success([]byte("byte slice content"))
+				}(req)
+
+				Expect(response.Content).To(Equal([]byte("byte slice content")))
 			})
 		})
 
