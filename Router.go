@@ -80,7 +80,6 @@ func (rt *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		if rt.notFound != nil {
 			foundHandler = rt.notFound
 		} else {
-			// For when the cloud function has not defined a 'not found' handler - last resort reply
 			w.WriteHeader(404)
 			_, err = w.Write([]byte("No provider could be found"))
 
@@ -88,12 +87,11 @@ func (rt *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 				log := log.Log{}
 				log.Error("Router (ServeHTTP) - Error writing response to client :", err.Error())
 			}
-
 			return
 		}
 	}
 
-	req := Request{input: r, output: w, args: params, Host: r.Host, URL: r.URL.Path, UserAgent: r.Header.Get("User-Agent")}
+	req := Request{input: r, args: params, Host: r.Host, URL: r.URL.Path, UserAgent: r.Header.Get("User-Agent")}
 	response := foundHandler(req)
 
 	if len(os.Getenv("BuildDate")) > 0 {
@@ -107,7 +105,10 @@ func (rt *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Send out the response
+	for key, val := range response.Headers {
+		w.Header().Set(key, val)
+	}
+
 	w.WriteHeader(response.StatusCode)
 	_, err = w.Write(response.Content)
 

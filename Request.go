@@ -13,16 +13,15 @@ import (
 )
 
 func CreateRequest(method, path string, body []byte, params map[string]string) Request {
-	return Request{input: httptest.NewRequest(method, path, bytes.NewReader(body)), output: nil, args: params, URL: path}
+	return Request{input: httptest.NewRequest(method, path, bytes.NewReader(body)), args: params, URL: path}
 }
 
 func CreateRequestAdvanced(request *http.Request, params map[string]string) Request {
-	return Request{input: request, output: nil, args: params, Host: request.Host, URL: request.URL.Path, UserAgent: request.Header.Get("User-Agent")}
+	return Request{input: request, args: params, Host: request.Host, URL: request.URL.Path, UserAgent: request.Header.Get("User-Agent")}
 }
 
 type Request struct {
 	input                *http.Request
-	output               http.ResponseWriter
 	args                 map[string]string
 	Host, URL, UserAgent string
 	body struct {
@@ -30,6 +29,7 @@ type Request struct {
 		error error
 		processed bool
 	}
+	responseHeaders map[string]string
 }
 
 func (r *Request) ArgExists(name string) bool {
@@ -55,7 +55,10 @@ func (r *Request) GetHeaders() map[string][]string {
 }
 
 func (r *Request) SetHeader(key, value string) {
-	r.output.Header().Set(key, value)
+	if len(r.responseHeaders) < 1 {
+		r.responseHeaders = make(map[string]string)
+	}
+	r.responseHeaders[key] = value
 }
 
 func (r *Request) GetPostVariable(name string) string {
@@ -85,72 +88,6 @@ func (r *Request) GetIP() string {
 	return forwardedIPs[0]
 }
 
-func (r *Request) GetOperatingSystem() string {
-	identifiers := make(map[string]string)
-
-	identifiers["Android"] = "Android"
-	identifiers["iPhone"] = "iOS"
-	identifiers["iPad"] = "iOS"
-	identifiers["Mac_PowerPC"] = "MacOS"
-	identifiers["Macintosh"] = "MacOS"
-	identifiers["Mac OS X"] = "MacOS"
-	identifiers["Linux"] = "Linux"
-	identifiers["Windows"] = "Windows"
-	identifiers["FacebookLinkPreview"] = "facebookexternalhit"
-
-	for key, os := range identifiers {
-		if strings.Contains(r.GetHeader("User-Agent"), key) {
-			return os
-		}
-	}
-
-	return ""
-}
-
-func (r *Request) GetDeviceType() string {
-	identifiers := make(map[string]string)
-
-	identifiers["iPad"] = "iPad"
-	identifiers["iPhone"] = "iPhone"
-	identifiers["Tablet"] = "Tablet"
-	identifiers["Android"] = "Android"
-	identifiers["FacebookLinkPreview"] = "Bot"
-
-	for key, device := range identifiers {
-		if strings.Contains(r.GetHeader("User-Agent"), key) {
-			if key == "Android" {
-				if strings.Contains(r.GetHeader("User-Agent"), "Mobile") {
-					return "Android Phone"
-				} else {
-					return "Android Tablet"
-				}
-			}
-
-			return device
-		}
-	}
-
-	return "Computer"
-}
-
-func (r *Request) GetBrowser() string {
-	identifiers := make(map[string]string)
-
-	identifiers["Chrome/"] = "Chrome"
-	identifiers["Firefox"] = "Firefox"
-	identifiers["Safari"] = "Safari"
-	identifiers["OPR/"] = "Opera"
-	identifiers["Opera/"] = "Opera"
-
-	for key, browser := range identifiers {
-		if strings.Contains(r.GetHeader("User-Agent"), key) {
-			return browser
-		}
-	}
-
-	return "Unknown"
-}
-
 func (r *Request) GetReferer() string {
 	return r.input.Referer()
 }
@@ -170,23 +107,23 @@ func (r *Request) PermanentRedirect(destination string) Response {
 }
 
 func (r *Request) Error(response interface{}) Response {
-	return Response{StatusCode: http.StatusBadRequest, Content: r.getResponseBody(response)}
+	return Response{StatusCode: http.StatusBadRequest, Headers: r.responseHeaders, Content: r.getResponseBody(response)}
 }
 
 func (r *Request) CustomResponse(statusCode int, response interface{}) Response {
-	return Response{StatusCode: statusCode, Content: r.getResponseBody(response)}
+	return Response{StatusCode: statusCode, Headers: r.responseHeaders, Content: r.getResponseBody(response)}
 }
 
 func (r *Request) Success(response interface{}) Response {
-	return Response{StatusCode: http.StatusOK, Content: r.getResponseBody(response)}
+	return Response{StatusCode: http.StatusOK, Headers: r.responseHeaders, Content: r.getResponseBody(response)}
 }
 
 func (r *Request) Created(response interface{}) Response {
-	return Response{StatusCode: http.StatusCreated, Content: r.getResponseBody(response)}
+	return Response{StatusCode: http.StatusCreated, Headers: r.responseHeaders, Content: r.getResponseBody(response)}
 }
 
 func (r *Request) Accepted(response interface{}) Response {
-	return Response{StatusCode: http.StatusAccepted, Content: r.getResponseBody(response)}
+	return Response{StatusCode: http.StatusAccepted, Headers: r.responseHeaders, Content: r.getResponseBody(response)}
 }
 
 func (r *Request) Body() []byte {

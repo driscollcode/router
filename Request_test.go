@@ -3,6 +3,7 @@ package router
 import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"net/http"
 	"net/http/httptest"
 	"time"
 )
@@ -51,9 +52,7 @@ var _ = Describe("Router unit tests", func() {
 
 				Expect(response.Content).To(Equal([]byte("found")))
 			})
-		})
 
-		When("a URL parameter is detected", func() {
 			It("should be available via the GetArg method", func() {
 				req := CreateRequest("GET", "/", nil, map[string]string{"parameterOne": "exists"})
 
@@ -65,6 +64,91 @@ var _ = Describe("Router unit tests", func() {
 				}(req)
 
 				Expect(response.Content).To(Equal([]byte("exists")))
+			})
+		})
+
+		When("a URL parameter is not detected", func() {
+			It("should cause the ArgExists method to return boolean false", func() {
+				req := CreateRequest("GET", "/", nil, nil)
+
+				response := func(request Request) Response {
+					return request.Success(request.ArgExists("unsetParameter"))
+				}(req)
+
+				Expect(response.Content).To(Equal([]byte("false")))
+			})
+
+			It("should be represented as the empty string when calling the GetArg method", func() {
+				req := CreateRequest("GET", "/", nil, nil)
+
+				response := func(request Request) Response {
+					return request.Success(request.GetArg("unsetParameter"))
+				}(req)
+
+				Expect(response.Content).To(Equal([]byte("")))
+			})
+		})
+	})
+
+	Context("Success responses", func() {
+		When("the Success() method is called", func() {
+			It("returns a HTTP 200 OK response", func() {
+				req := CreateRequest("GET", "/", nil, nil)
+
+				response := func(request Request) Response {
+					return request.Success(nil)
+				}(req)
+
+				Expect(response.StatusCode).To(Equal(http.StatusOK))
+			})
+		})
+
+		When("the Created() method is called", func() {
+			It("returns a HTTP 201 Created response", func() {
+				req := CreateRequest("GET", "/", nil, nil)
+
+				response := func(request Request) Response {
+					return request.Created(nil)
+				}(req)
+
+				Expect(response.StatusCode).To(Equal(http.StatusCreated))
+			})
+		})
+
+		When("the Accepted() method is called", func() {
+			It("returns a HTTP 202 Accepted response", func() {
+				req := CreateRequest("GET", "/", nil, nil)
+
+				response := func(request Request) Response {
+					return request.Accepted(nil)
+				}(req)
+
+				Expect(response.StatusCode).To(Equal(http.StatusAccepted))
+			})
+		})
+
+		When("the CustomResponse() method is called", func() {
+			It("returns a custom HTTP status code response", func() {
+				req := CreateRequest("GET", "/", nil, nil)
+
+				response := func(request Request) Response {
+					return request.CustomResponse(999, nil)
+				}(req)
+
+				Expect(response.StatusCode).To(Equal(999))
+			})
+		})
+
+		When("the SetHeader method is called", func() {
+			It("causes a header to be added to the HTTP response", func() {
+				req := CreateRequest("GET", "/", nil, nil)
+
+				response := func(request Request) Response {
+					request.SetHeader("Custom-Response-Header", "Set")
+					return request.Success(nil)
+				}(req)
+
+				Expect(response.Headers["Custom-Response-Header"]).To(Equal("Set"))
 			})
 		})
 	})
