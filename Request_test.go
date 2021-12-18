@@ -70,6 +70,42 @@ var _ = Describe("Router unit tests", func() {
 	})
 
 	Context("Returns from multiple formats of variables", func() {
+		When("the handler returns nil", func() {
+			It("serves up a byte slice containing nil", func() {
+				req := CreateRequest("GET", "/", nil, nil)
+
+				response := func(request Request) Response {
+					return request.Success(nil)
+				}(req)
+
+				Expect(response.Content).To(Equal([]byte(nil)))
+			})
+		})
+
+		When("the handler returns a boolean true", func() {
+			It("serves up a byte slice containing the string representation of a boolean true", func() {
+				req := CreateRequest("GET", "/", nil, nil)
+
+				response := func(request Request) Response {
+					return request.Success(true)
+				}(req)
+
+				Expect(response.Content).To(Equal([]byte("true")))
+			})
+		})
+
+		When("the handler returns a boolean false", func() {
+			It("serves up a byte slice containing the string representation of a boolean false", func() {
+				req := CreateRequest("GET", "/", nil, nil)
+
+				response := func(request Request) Response {
+					return request.Success(false)
+				}(req)
+
+				Expect(response.Content).To(Equal([]byte("false")))
+			})
+		})
+
 		When("the handler returns a string", func() {
 			It("serves up a byte slice equivalent of the string", func() {
 				req := CreateRequest("GET", "/", nil, nil)
