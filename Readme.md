@@ -50,7 +50,7 @@ You can also perform a quick redirect with these functions.
 
 The following functions are defined on the ``Request`` struct and are available with each request.
 
-* ``ArgExists(name string) bool`` - Does the named argument exist in the URL
+* ``ArgExists(name string) bool`` - Does the named argument exists in the URL
 * ``Body() []byte`` - Return the request body as a byte slice
 * ``BodyError() error`` - Return an error if one occurred when fetching the request body
 * ``GetArg(name string) string`` - Fetch the named argument from the URL
@@ -62,6 +62,7 @@ The following functions are defined on the ``Request`` struct and are available 
 * ``GetOperatingSystem() string`` - Guesstimate the operating system from the ``User-Agent`` header
 * ``GetReferer() string`` - Get the HTTP Referer header from the request
 * ``GetPostVariable(name string) string`` - Get the specified POST variable from the request
+* ``HeaderExists(header string) bool`` - Check if the specified header exists in the request
 * ``HasBody() bool`` - Simple check to determine if the request has a body
 * ``PostVariableExists(name string) bool`` - Check if the specified POST variable exists
 * ``SetHeader(key, value string)`` - Set a header for the request response
