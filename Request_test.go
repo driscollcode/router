@@ -14,6 +14,23 @@ var _ = Describe("Router unit tests", func() {
 
 	Context("Header detection", func() {
 		When("a request contains a given header", func() {
+			It("should be detectable via the HeaderExists() method", func() {
+				r := httptest.NewRequest("GET", "/", nil)
+				r.Header.Set("x-custom-header", "exists")
+				req := CreateRequestAdvanced(r, nil)
+
+				response := func(request Request) Response {
+					switch request.HeaderExists("X-Custom-Header") {
+					case true:
+						return request.Success(nil)
+					default:
+						return request.Error(nil)
+					}
+				}(req)
+
+				Expect(response.StatusCode).To(Equal(http.StatusOK))
+			})
+
 			It("should be available via the GetHeader() method", func() {
 				r := httptest.NewRequest("GET", "/", nil)
 				r.Header.Set("x-custom-header", "exists")

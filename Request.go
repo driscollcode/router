@@ -46,6 +46,10 @@ func (r *Request) GetArg(name string) string {
 	return arg
 }
 
+func (r *Request) HeaderExists(header string) bool {
+	return len(r.input.Header.Get(header)) > 0
+}
+
 func (r *Request) GetHeader(header string) string {
 	return r.input.Header.Get(header)
 }
