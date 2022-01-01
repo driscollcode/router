@@ -116,6 +116,17 @@ type Response struct {
 
 Given this structure, it is easy to test the response returned by any handler.
 
+### With Interface Generated Mocks
+
+The ``router.Request`` type is an interface and can be used to generate mocks for unit tests eg.
+
+```go
+//go:generate mockgen -destination=mock-request.go -package=mocks . MockRequest
+type MockRequest interface {
+	router.Request
+}
+```
+
 ### Create Request
 
 The ``CreateRequest`` method provides a simple way to create a request struct. Arguments are

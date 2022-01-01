@@ -3,7 +3,6 @@ package router
 import (
 	"errors"
 	"fmt"
-	"github.com/driscollcode/log"
 	"net/http"
 	"os"
 	"strings"
@@ -55,16 +54,12 @@ func (r *Router) url(method, path string, handler handler) {
 	r.routes = append(r.routes, route{Method: method, Path: path, Handler: handler})
 }
 
-func (rt *Router) Serve(port int) {
-	err := http.ListenAndServe(fmt.Sprintf(":%d", port), rt)
-	log := log.Log{}
-	log.Error("Router - error from ListenAndServe :", err.Error())
+func (rt *Router) Serve(port int) error {
+	return http.ListenAndServe(fmt.Sprintf(":%d", port), rt)
 }
 
-func (rt *Router) ServeIP(ip string, port int) {
-	err := http.ListenAndServe(fmt.Sprintf("%s:%d", ip, port), rt)
-	log := log.Log{}
-	log.Error("Router - error from ListenAndServe :", err.Error())
+func (rt *Router) ServeIP(ip string, port int) error {
+	return http.ListenAndServe(fmt.Sprintf("%s:%d", ip, port), rt)
 }
 
 func (rt *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -81,18 +76,13 @@ func (rt *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			foundHandler = rt.notFound
 		} else {
 			w.WriteHeader(404)
-			_, err = w.Write([]byte("No provider could be found"))
-
-			if err != nil {
-				log := log.Log{}
-				log.Error("Router (ServeHTTP) - Error writing response to client :", err.Error())
-			}
+			w.Write([]byte("No provider could be found"))
 			return
 		}
 	}
 
-	req := Request{input: r, args: params, Host: r.Host, URL: r.URL.Path, UserAgent: r.Header.Get("User-Agent")}
-	response := foundHandler(req)
+	req := request{input: r, args: params, Host: r.Host, URL: r.URL.Path, UserAgent: r.Header.Get("User-Agent")}
+	response := foundHandler(&req)
 
 	if len(os.Getenv("BuildDate")) > 0 {
 		w.Header().Set("X-Build-Date", os.Getenv("BuildDate"))
@@ -110,12 +100,7 @@ func (rt *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(response.StatusCode)
-	_, err = w.Write(response.Content)
-
-	if err != nil {
-		log := log.Log{}
-		log.Error("Cloud Service Library ( Handler ) - Error writing response to client :", err.Error())
-	}
+	w.Write(response.Content)
 }
 
 func (rt *Router) findHandler(r *http.Request) (handler, map[string]string, error) {
