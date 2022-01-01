@@ -33,13 +33,12 @@ func getUser(request router.Request) router.Response {
 ### Request Response Functions
 
 The following functions are part of the ``Request`` struct and can be the return value of a handler function.
-The ``response interface{}`` parameter can be any inbuilt type (including ``[]byte``) or any struct that can be marshalled to json.
+The ``response`` parameters can be any inbuilt type (including ``[]byte``) or any struct that can be marshalled 
+to json. To respond with a specific HTTP status code, supply that as the first parameter to either the 
+``Error`` or ``Success`` function.
 
-* ``CustomResponse(statusCode int, response interface{})`` A custom response with the supplied HTTP status code and content
-* ``Error(response interface{})`` - HTTP 400 (Bad Request) response with the supplied content
-* ``Success(response interface{})`` - HTTP 200 OK response with the supplied content
-* ``Created(response interface{})`` - HTTP 201 Created response with the supplied content
-* ``Accepted(response interface{})`` - HTTP 202 Accepted response with the supplied content
+* ``Error(response ...interface{})`` - HTTP 400 (Bad Request) response with the supplied content
+* ``Success(response ...interface{})`` - HTTP 200 OK response with the supplied content
 
 You can also perform a quick redirect with these functions.
 

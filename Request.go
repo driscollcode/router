@@ -8,18 +8,16 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"reflect"
+	"strconv"
 	"strings"
 	"time"
 )
 
 type Request interface {
-	Accepted(response interface{}) Response
 	ArgExists(name string) bool
 	Body() []byte
 	BodyError() error
-	Created(response interface{}) Response
-	CustomResponse(statusCode int, response interface{}) Response
-	Error(response interface{}) Response
+	Error(response ...interface{}) Response
 	GetArg(name string) string
 	GetHeader(header string) string
 	GetHeaders() map[string][]string
@@ -33,7 +31,7 @@ type Request interface {
 	PostVariableExists(name string) bool
 	Redirect(destination string) Response
 	SetHeader(key, value string)
-	Success(response interface{}) Response
+	Success(response ...interface{}) Response
 }
 
 
@@ -135,24 +133,12 @@ func (r *request) PermanentRedirect(destination string) Response {
 	return response
 }
 
-func (r *request) Error(response interface{}) Response {
-	return Response{StatusCode: http.StatusBadRequest, Headers: r.responseHeaders, Content: r.getResponseBody(response)}
+func (r *request) Error(response ...interface{}) Response {
+	return Response{StatusCode: r.getStatusCode(http.StatusBadRequest, response...), Headers: r.responseHeaders, Content: r.getResponseBody(response...)}
 }
 
-func (r *request) CustomResponse(statusCode int, response interface{}) Response {
-	return Response{StatusCode: statusCode, Headers: r.responseHeaders, Content: r.getResponseBody(response)}
-}
-
-func (r *request) Success(response interface{}) Response {
-	return Response{StatusCode: http.StatusOK, Headers: r.responseHeaders, Content: r.getResponseBody(response)}
-}
-
-func (r *request) Created(response interface{}) Response {
-	return Response{StatusCode: http.StatusCreated, Headers: r.responseHeaders, Content: r.getResponseBody(response)}
-}
-
-func (r *request) Accepted(response interface{}) Response {
-	return Response{StatusCode: http.StatusAccepted, Headers: r.responseHeaders, Content: r.getResponseBody(response)}
+func (r *request) Success(response ...interface{}) Response {
+	return Response{StatusCode: r.getStatusCode(http.StatusOK, response...), Headers: r.responseHeaders, Content: r.getResponseBody(response...)}
 }
 
 func (r *request) Body() []byte {
@@ -179,25 +165,66 @@ func (r *request) processBody() {
 	r.body.processed = true
 }
 
-func (r *request) getResponseBody(response interface{}) []byte {
+func (r *request) getResponseBody(response ...interface{}) []byte {
 	if response == nil {
 		return nil
 	}
 
-	switch reflect.ValueOf(response).Kind() {
-	case reflect.Struct:
-		if _, ok := response.(time.Time); ok {
-			return []byte(response.(time.Time).Format("2006-01-02 15:04:05"))
+	output := make([]byte, 0)
+	for pos, piece := range response {
+		if pos == 0 {
+			if asInt, ok := piece.(int); ok && asInt >= 100 && asInt <= 999 {
+				continue
+			}
 		}
 
-		if bytes, err := json.Marshal(response); err == nil {
+		if len(output) > 0 {
+			output = append(output, []byte("")...)
+		}
+		output = append(output, r.getContentAsByte(piece)...)
+	}
+	return output
+}
+
+func (r *request) getContentAsByte(content interface{}) []byte {
+	switch reflect.ValueOf(content).Kind() {
+	case reflect.Struct:
+		if _, ok := content.(time.Time); ok {
+			return []byte(fmt.Sprintf("%s", content.(time.Time).Format("2006-01-02 15:04:05")))
+		}
+
+		if bytes, err := json.Marshal(content); err == nil {
 			return bytes
 		}
+	case reflect.Bool:
+		return []byte(fmt.Sprint(content))
 	case reflect.Slice:
-		if _, ok := response.([]byte); ok {
-			return response.([]byte)
+		if bytes, ok := content.([]byte); ok {
+			return bytes
 		}
+		return []byte(fmt.Sprint(content))
+	case reflect.String:
+		return []byte(content.(string))
+	case reflect.Int:
+		return []byte(strconv.Itoa(content.(int)))
+	case reflect.Float64:
+		return []byte(strconv.FormatFloat(content.(float64), 'f', -1, 64))
+	}
+	return nil
+}
+
+func (r *request) getStatusCode(defaultCode int, parts ...interface{}) int {
+	if len(parts) < 1 {
+		return defaultCode
 	}
 
-	return []byte(fmt.Sprintf("%v", response))
+	userCode, err := strconv.Atoi(fmt.Sprintf("%v", parts[0]))
+	if err != nil {
+		return defaultCode
+	}
+
+	if userCode >= 100 && userCode <= 999 {
+		return userCode
+	}
+	return defaultCode
 }

@@ -22,9 +22,9 @@ var _ = Describe("Router unit tests", func() {
 				response := func(request Request) Response {
 					switch request.HeaderExists("X-Custom-Header") {
 					case true:
-						return request.Success(nil)
+						return request.Success()
 					default:
-						return request.Error(nil)
+						return request.Error()
 					}
 				}(req)
 
@@ -282,46 +282,49 @@ var _ = Describe("Router unit tests", func() {
 				req := CreateRequest("GET", "/", nil, nil)
 
 				response := func(request Request) Response {
-					return request.Success(nil)
+					return request.Success()
 				}(req)
 
 				Expect(response.StatusCode).To(Equal(http.StatusOK))
 			})
 		})
 
-		When("the Created() method is called", func() {
-			It("returns a HTTP 201 Created response", func() {
+		When("the Success() method is called with a custom response code", func() {
+			It("returns the user specified response code", func() {
 				req := CreateRequest("GET", "/", nil, nil)
 
 				response := func(request Request) Response {
-					return request.Created(nil)
-				}(req)
-
-				Expect(response.StatusCode).To(Equal(http.StatusCreated))
-			})
-		})
-
-		When("the Accepted() method is called", func() {
-			It("returns a HTTP 202 Accepted response", func() {
-				req := CreateRequest("GET", "/", nil, nil)
-
-				response := func(request Request) Response {
-					return request.Accepted(nil)
+					return request.Success(http.StatusAccepted, "OK")
 				}(req)
 
 				Expect(response.StatusCode).To(Equal(http.StatusAccepted))
+				Expect(response.Content).To(Equal([]byte("OK")))
 			})
 		})
 
-		When("the CustomResponse() method is called", func() {
-			It("returns a custom HTTP status code response", func() {
+		When("the Error() method is called", func() {
+			It("returns a HTTP Bad Request status code", func() {
 				req := CreateRequest("GET", "/", nil, nil)
 
 				response := func(request Request) Response {
-					return request.CustomResponse(999, nil)
+					return request.Error()
 				}(req)
 
-				Expect(response.StatusCode).To(Equal(999))
+				Expect(response.StatusCode).To(Equal(http.StatusBadRequest))
+				Expect(response.Content).To(Equal([]byte("")))
+			})
+		})
+
+		When("the Error() method is called with a custom response code", func() {
+			It("returns the user specified response code", func() {
+				req := CreateRequest("GET", "/", nil, nil)
+
+				response := func(request Request) Response {
+					return request.Error(http.StatusUnauthorized, "OK")
+				}(req)
+
+				Expect(response.StatusCode).To(Equal(http.StatusUnauthorized))
+				Expect(response.Content).To(Equal([]byte("OK")))
 			})
 		})
 
@@ -331,7 +334,7 @@ var _ = Describe("Router unit tests", func() {
 
 				response := func(request Request) Response {
 					request.SetHeader("Custom-Response-Header", "Set")
-					return request.Success(nil)
+					return request.Success()
 				}(req)
 
 				Expect(response.Headers["Custom-Response-Header"]).To(Equal("Set"))
@@ -390,10 +393,10 @@ var _ = Describe("Router unit tests", func() {
 				req := CreateRequest("GET", "/", nil, nil)
 
 				response := func(request Request) Response {
-					return request.Success(nil)
+					return request.Success()
 				}(req)
 
-				Expect(response.Content).To(Equal([]byte(nil)))
+				Expect(response.Content).To(Equal([]byte("")))
 			})
 		})
 
