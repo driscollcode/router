@@ -21,10 +21,12 @@ type Request interface {
 	GetArg(name string) string
 	GetHeader(header string) string
 	GetHeaders() map[string][]string
+	GetHost() string
 	GetIP() string
 	GetPostVariable(name string) string
 	GetReferer() string
 	GetURL() string
+	GetUserAgent() string
 	HasBody() bool
 	HeaderExists(header string) bool
 	PermanentRedirect(destination string) Response
