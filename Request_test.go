@@ -333,7 +333,7 @@ var _ = Describe("Router unit tests", func() {
 				req := CreateRequest("GET", "/", nil, nil)
 
 				response := func(request Request) Response {
-					request.SetHeader("Custom-Response-Header", "Set")
+					request.SetResponseHeader("Custom-Response-Header", "Set")
 					return request.Success()
 				}(req)
 

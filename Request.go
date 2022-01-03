@@ -30,7 +30,7 @@ type Request interface {
 	PermanentRedirect(destination string) Response
 	PostVariableExists(name string) bool
 	Redirect(destination string) Response
-	SetHeader(key, value string)
+	SetResponseHeader(key, value string)
 	Success(response ...interface{}) Response
 }
 
@@ -53,6 +53,14 @@ type request struct {
 		processed bool
 	}
 	responseHeaders map[string]string
+}
+
+func (r *request) GetHost() string {
+	return r.Host
+}
+
+func (r *request) GetUserAgent() string {
+	return r.UserAgent
 }
 
 func (r *request) ArgExists(name string) bool {
@@ -81,7 +89,7 @@ func (r *request) GetHeaders() map[string][]string {
 	return r.input.Header
 }
 
-func (r *request) SetHeader(key, value string) {
+func (r *request) SetResponseHeader(key, value string) {
 	if len(r.responseHeaders) < 1 {
 		r.responseHeaders = make(map[string]string)
 	}

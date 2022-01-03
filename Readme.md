@@ -57,14 +57,16 @@ The following functions are defined on the ``Request`` struct and are available 
 * ``GetDeviceType() string`` - Guesstimate the device type from the request ``User-Agent`` header
 * ``GetHeader(header string) string`` - Fetch the named request HTTP header
 * ``GetHeaders() map[string][]string`` - Fetch a map of all request headers
+* ``GetHost() string`` - Fetch the hostname of the request URL
 * ``GetIP() string`` - Get the IP address of the request
 * ``GetOperatingSystem() string`` - Guesstimate the operating system from the ``User-Agent`` header
 * ``GetReferer() string`` - Get the HTTP Referer header from the request
 * ``GetPostVariable(name string) string`` - Get the specified POST variable from the request
+* ``GetUserAgent() string`` - Get the User Agent header from the request
 * ``HeaderExists(header string) bool`` - Check if the specified header exists in the request
 * ``HasBody() bool`` - Simple check to determine if the request has a body
 * ``PostVariableExists(name string) bool`` - Check if the specified POST variable exists
-* ``SetHeader(key, value string)`` - Set a header for the request response
+* ``SetResponseHeader(key, value string)`` - Set a header for the request response
 
 ## Testing
 
