@@ -1,3 +1,3 @@
 package router
 
-type handler func(request Request) Response
+type Handler func(request Request) Response

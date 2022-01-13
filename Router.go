@@ -10,35 +10,35 @@ import (
 
 type Router struct {
 	routes   []route
-	notFound handler
+	notFound Handler
 	root     string
 }
 
-func (r *Router) Get(path string, handler handler) {
+func (r *Router) Get(path string, handler Handler) {
 	r.url("GET", path, handler)
 }
 
-func (r *Router) Post(path string, handler handler) {
+func (r *Router) Post(path string, handler Handler) {
 	r.url("POST", path, handler)
 }
 
-func (r *Router) Put(path string, handler handler) {
+func (r *Router) Put(path string, handler Handler) {
 	r.url("PUT", path, handler)
 }
 
-func (r *Router) Patch(path string, handler handler) {
+func (r *Router) Patch(path string, handler Handler) {
 	r.url("PATCH", path, handler)
 }
 
-func (r *Router) Delete(path string, handler handler) {
+func (r *Router) Delete(path string, handler Handler) {
 	r.url("DELETE", path, handler)
 }
 
-func (r *Router) Route(method, path string, handler handler) {
+func (r *Router) Route(method, path string, handler Handler) {
 	r.url(method, path, handler)
 }
 
-func (r *Router) NotFound(handler handler) {
+func (r *Router) NotFound(handler Handler) {
 	r.notFound = handler
 }
 
@@ -46,7 +46,7 @@ func (r *Router) Root(urlRoot string) {
 	r.root = urlRoot
 }
 
-func (r *Router) url(method, path string, handler handler) {
+func (r *Router) url(method, path string, handler Handler) {
 	if len(r.routes) < 1 {
 		r.routes = make([]route, 0)
 	}
@@ -103,7 +103,7 @@ func (rt *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.Write(response.Content)
 }
 
-func (rt *Router) findHandler(r *http.Request) (handler, map[string]string, error) {
+func (rt *Router) findHandler(r *http.Request) (Handler, map[string]string, error) {
 	for _, route := range rt.routes {
 		if !strings.EqualFold(r.Method, route.Method) {
 			continue
