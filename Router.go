@@ -82,7 +82,7 @@ func (rt *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	req := request{input: r, args: params, Host: r.Host, URL: r.URL.Path, UserAgent: r.Header.Get("User-Agent")}
-	response := foundHandler(&req)
+	response := foundHandler(&req).(*request).response
 
 	if len(os.Getenv("BuildDate")) > 0 {
 		w.Header().Set("X-Build-Date", os.Getenv("BuildDate"))

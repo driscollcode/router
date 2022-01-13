@@ -17,7 +17,7 @@ type Request interface {
 	ArgExists(name string) bool
 	Body() []byte
 	BodyError() error
-	Error(response ...interface{}) Response
+	Error(response ...interface{}) Request
 	GetArg(name string) string
 	GetHeader(header string) string
 	GetHeaders() map[string][]string
@@ -29,11 +29,12 @@ type Request interface {
 	GetUserAgent() string
 	HasBody() bool
 	HeaderExists(header string) bool
-	PermanentRedirect(destination string) Response
+	PermanentRedirect(destination string) Request
 	PostVariableExists(name string) bool
-	Redirect(destination string) Response
+	Redirect(destination string) Request
+	Response(response ...interface{}) Request
 	SetResponseHeader(key, value string)
-	Success(response ...interface{}) Response
+	Success(response ...interface{}) Request
 }
 
 
@@ -54,7 +55,7 @@ type request struct {
 		error error
 		processed bool
 	}
-	responseHeaders map[string]string
+	response response
 }
 
 func (r *request) GetHost() string {
@@ -92,10 +93,10 @@ func (r *request) GetHeaders() map[string][]string {
 }
 
 func (r *request) SetResponseHeader(key, value string) {
-	if len(r.responseHeaders) < 1 {
-		r.responseHeaders = make(map[string]string)
+	if len(r.response.Headers) < 1 {
+		r.response.Headers = make(map[string]string)
 	}
-	r.responseHeaders[key] = value
+	r.response.Headers[key] = value
 }
 
 func (r *request) GetPostVariable(name string) string {
@@ -129,26 +130,38 @@ func (r *request) GetReferer() string {
 	return r.input.Referer()
 }
 
-func (r *request) Redirect(destination string) Response {
-	response := Response{StatusCode: 302}
-	response.Redirect.DoRedirect = true
-	response.Redirect.Destination = destination
-	return response
+func (r *request) Redirect(destination string) Request {
+	r.response.StatusCode = http.StatusFound
+	r.response.Redirect.DoRedirect = true
+	r.response.Redirect.Destination = destination
+	return r
 }
 
-func (r *request) PermanentRedirect(destination string) Response {
-	response := Response{StatusCode: 301}
-	response.Redirect.DoRedirect = true
-	response.Redirect.Destination = destination
-	return response
+func (r *request) PermanentRedirect(destination string) Request {
+	r.response.StatusCode = http.StatusMovedPermanently
+	r.response.Redirect.DoRedirect = true
+	r.response.Redirect.Destination = destination
+	return r
 }
 
-func (r *request) Error(response ...interface{}) Response {
-	return Response{StatusCode: r.getStatusCode(http.StatusBadRequest, response...), Headers: r.responseHeaders, Content: r.getResponseBody(response...)}
+func (r *request) Error(response ...interface{}) Request {
+	r.response.StatusCode = r.getStatusCode(http.StatusBadRequest, response...)
+	r.response.Content = append(r.response.Content, r.getResponseBody(response...)...)
+	return r
 }
 
-func (r *request) Success(response ...interface{}) Response {
-	return Response{StatusCode: r.getStatusCode(http.StatusOK, response...), Headers: r.responseHeaders, Content: r.getResponseBody(response...)}
+func (r *request) Success(response ...interface{}) Request {
+	r.response.StatusCode = r.getStatusCode(http.StatusOK, response...)
+	r.response.Content = append(r.response.Content, r.getResponseBody(response...)...)
+	return r
+}
+
+func(r *request) Response(response ...interface{}) Request {
+	if r.response.StatusCode < 1 {
+		r.response.StatusCode = r.getStatusCode(http.StatusOK, response...)
+	}
+	r.response.Content = append(r.response.Content, r.getResponseBody(response...)...)
+	return r
 }
 
 func (r *request) Body() []byte {

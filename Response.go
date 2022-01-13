@@ -1,6 +1,6 @@
 package router
 
-type Response struct {
+type response struct {
 	StatusCode int
 	Headers map[string]string
 	Content    []byte

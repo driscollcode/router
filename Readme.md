@@ -39,6 +39,7 @@ to json. To respond with a specific HTTP status code, supply that as the first p
 
 * ``Error(response ...interface{})`` - HTTP 400 (Bad Request) response with the supplied content
 * ``Success(response ...interface{})`` - HTTP 200 OK response with the supplied content
+* ``Response(response ...interface{})`` - Set response content without specifying an HTTP status code (see Middleware).
 
 You can also perform a quick redirect with these functions.
 
@@ -67,6 +68,59 @@ The following functions are defined on the ``Request`` struct and are available 
 * ``HasBody() bool`` - Simple check to determine if the request has a body
 * ``PostVariableExists(name string) bool`` - Check if the specified POST variable exists
 * ``SetResponseHeader(key, value string)`` - Set a header for the request response
+
+## Middleware
+
+The router supports chains of handlers working together. The following example will output the line below.
+
+`pre processed content - interesting content - post processed content`
+
+As the request is handled, it is passed first to `postware` which runs the passed handler first, and then
+adds it's own content. The passed handler is `preware` which adds it's content first, and then calls it's own
+passed handler, in this case `myHandler`.
+
+By changing the order in which handlers either modify a request themselves or pass it on to another handler,
+you can control the order in which handlers add to the overal request.
+
+The `request.Response()` method is used in `myHandler` - this will not set an HTTP status code if one is
+already set - allowing you to defer this responsiblity to middleware. If no HTTP status code is set, `request.Response()`
+will set the `HTTP 200 OK` code. You can easily override this anyway in any middleware by setting the first 
+argument to your chosen status code.
+
+In the example below, the `preware` is actually setting the status code to be `201`. If multiple handlers set a
+status code, the last call to set a code is the one that goes to the browser.
+
+```go
+package main
+
+import (
+	"github.com/driscollcode/router"
+)
+
+func main() {
+	myRouter := router.Router{}
+	myRouter.Get("/", postware(preware(myHandler)))
+	myRouter.Serve(80)
+}
+
+func preware(handler router.Handler) router.Handler {
+	return func(request router.Request) router.Request {
+		request.Success(201, "pre processed content - ")
+		return handler(request)
+	}
+}
+
+func postware(handler router.Handler) router.Handler {
+	return func(request router.Request) router.Request {
+		request = handler(request)
+		return request.Response(" - post processed content")
+	}
+}
+
+func myHandler(request router.Request) router.Request {
+	return request.Response("interesting content")
+}
+```
 
 ## Testing
 
