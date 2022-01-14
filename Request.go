@@ -25,7 +25,6 @@ type Request interface {
 	GetIP() string
 	GetPostVariable(name string) string
 	GetReferer() string
-	GetResponse() Response
 	GetURL() string
 	GetUserAgent() string
 	HasBody() bool
@@ -65,10 +64,6 @@ func (r *request) GetHost() string {
 
 func (r *request) GetUserAgent() string {
 	return r.UserAgent
-}
-
-func (r *request) GetResponse() Response {
-	return r.response
 }
 
 func (r *request) ArgExists(name string) bool {

@@ -28,7 +28,7 @@ var _ = Describe("Router unit tests", func() {
 					}
 				}(req)
 
-				Expect(response.GetResponse().StatusCode).To(Equal(http.StatusOK))
+				Expect(response.(*request).response.StatusCode).To(Equal(http.StatusOK))
 			})
 
 			It("should be available via the GetHeader() method", func() {
@@ -40,7 +40,7 @@ var _ = Describe("Router unit tests", func() {
 					return request.Success(request.GetHeader("X-Custom-Header"))
 				}(req)
 
-				Expect(response.GetResponse().Content).To(Equal([]byte("exists")))
+				Expect(response.(*request).response.Content).To(Equal([]byte("exists")))
 			})
 
 			It("should be available via the GetHeaders() method", func() {
@@ -52,7 +52,7 @@ var _ = Describe("Router unit tests", func() {
 					return request.Success(request.GetHeaders()["X-Custom-Header"][0])
 				}(req)
 
-				Expect(response.GetResponse().Content).To(Equal([]byte("exists")))
+				Expect(response.(*request).response.Content).To(Equal([]byte("exists")))
 			})
 		})
 	})
@@ -69,7 +69,7 @@ var _ = Describe("Router unit tests", func() {
 					return request.Error("failed")
 				}(req)
 
-				Expect(response.GetResponse().Content).To(Equal([]byte("found")))
+				Expect(response.(*request).response.Content).To(Equal([]byte("found")))
 			})
 
 			It("should be available via the GetArg method", func() {
@@ -82,7 +82,7 @@ var _ = Describe("Router unit tests", func() {
 					return request.Success(request.GetArg("parameterOne"))
 				}(req)
 
-				Expect(response.GetResponse().Content).To(Equal([]byte("exists")))
+				Expect(response.(*request).response.Content).To(Equal([]byte("exists")))
 			})
 		})
 
@@ -94,7 +94,7 @@ var _ = Describe("Router unit tests", func() {
 					return request.Success(request.ArgExists("unsetParameter"))
 				}(req)
 
-				Expect(response.GetResponse().Content).To(Equal([]byte("false")))
+				Expect(response.(*request).response.Content).To(Equal([]byte("false")))
 			})
 
 			It("should be represented as the empty string when calling the GetArg method", func() {
@@ -104,7 +104,7 @@ var _ = Describe("Router unit tests", func() {
 					return request.Success(request.GetArg("unsetParameter"))
 				}(req)
 
-				Expect(response.GetResponse().Content).To(Equal([]byte("")))
+				Expect(response.(*request).response.Content).To(Equal([]byte("")))
 			})
 		})
 	})
@@ -118,7 +118,7 @@ var _ = Describe("Router unit tests", func() {
 					return request.Success(request.GetURL())
 				}(req)
 
-				Expect(response.GetResponse().Content).To(Equal([]byte("/this/is/the/url")))
+				Expect(response.(*request).response.Content).To(Equal([]byte("/this/is/the/url")))
 			})
 		})
 
@@ -132,7 +132,7 @@ var _ = Describe("Router unit tests", func() {
 					return request.Success(request.GetIP())
 				}(req)
 
-				Expect(response.GetResponse().Content).To(Equal([]byte("127.0.0.1")))
+				Expect(response.(*request).response.Content).To(Equal([]byte("127.0.0.1")))
 			})
 
 			It("should return the RemoteAddr request property if the X-Forwarded-For header is not present", func() {
@@ -144,7 +144,7 @@ var _ = Describe("Router unit tests", func() {
 					return request.Success(request.GetIP())
 				}(req)
 
-				Expect(response.GetResponse().Content).To(Equal([]byte("127.0.0.2")))
+				Expect(response.(*request).response.Content).To(Equal([]byte("127.0.0.2")))
 			})
 		})
 	})
@@ -162,7 +162,7 @@ var _ = Describe("Router unit tests", func() {
 					return request.Success(request.PostVariableExists("post-data"))
 				}(req)
 
-				Expect(response.GetResponse().Content).To(Equal([]byte("true")))
+				Expect(response.(*request).response.Content).To(Equal([]byte("true")))
 			})
 
 			It("should return false if the specified post variable is not present", func() {
@@ -176,7 +176,7 @@ var _ = Describe("Router unit tests", func() {
 					return request.Success(request.PostVariableExists("unset-post-variable"))
 				}(req)
 
-				Expect(response.GetResponse().Content).To(Equal([]byte("false")))
+				Expect(response.(*request).response.Content).To(Equal([]byte("false")))
 			})
 
 			It("should return false when HasBody() is called and there is no post body", func() {
@@ -189,7 +189,7 @@ var _ = Describe("Router unit tests", func() {
 					return request.Success(request.HasBody())
 				}(req)
 
-				Expect(response.GetResponse().Content).To(Equal([]byte("false")))
+				Expect(response.(*request).response.Content).To(Equal([]byte("false")))
 			})
 
 			It("should return true when HasBody() is called and there is a post body", func() {
@@ -203,7 +203,7 @@ var _ = Describe("Router unit tests", func() {
 					return request.Success(request.HasBody())
 				}(req)
 
-				Expect(response.GetResponse().Content).To(Equal([]byte("true")))
+				Expect(response.(*request).response.Content).To(Equal([]byte("true")))
 			})
 
 			It("should return a byte slice when the post body is requested via the Body() method", func() {
@@ -217,7 +217,7 @@ var _ = Describe("Router unit tests", func() {
 					return request.Success(request.Body())
 				}(req)
 
-				Expect(response.GetResponse().Content).To(Equal([]byte("post-data=set")))
+				Expect(response.(*request).response.Content).To(Equal([]byte("post-data=set")))
 			})
 
 			It("should return an empty byte slice via the Body() method when there is no post body", func() {
@@ -230,7 +230,7 @@ var _ = Describe("Router unit tests", func() {
 					return request.Success(request.Body())
 				}(req)
 
-				Expect(response.GetResponse().Content).To(Equal([]byte("")))
+				Expect(response.(*request).response.Content).To(Equal([]byte("")))
 			})
 
 			It("should return a nil error when BodyError() is called as it is very hard to trip this error", func() {
@@ -241,7 +241,7 @@ var _ = Describe("Router unit tests", func() {
 					return request.Success(request.BodyError())
 				}(req)
 
-				Expect(response.GetResponse().Content).To(Equal([]byte("")))
+				Expect(response.(*request).response.Content).To(Equal([]byte("")))
 			})
 		})
 
@@ -257,7 +257,7 @@ var _ = Describe("Router unit tests", func() {
 					return request.Success(request.GetPostVariable("post-data"))
 				}(req)
 
-				Expect(response.GetResponse().Content).To(Equal([]byte("set")))
+				Expect(response.(*request).response.Content).To(Equal([]byte("set")))
 			})
 
 			It("should return an empty string if the value is not present", func() {
@@ -271,7 +271,7 @@ var _ = Describe("Router unit tests", func() {
 					return request.Success(request.GetPostVariable("unset-post-variable"))
 				}(req)
 
-				Expect(response.GetResponse().Content).To(Equal([]byte("")))
+				Expect(response.(*request).response.Content).To(Equal([]byte("")))
 			})
 		})
 	})
@@ -285,7 +285,7 @@ var _ = Describe("Router unit tests", func() {
 					return request.Success()
 				}(req)
 
-				Expect(response.GetResponse().StatusCode).To(Equal(http.StatusOK))
+				Expect(response.(*request).response.StatusCode).To(Equal(http.StatusOK))
 			})
 		})
 
@@ -297,8 +297,8 @@ var _ = Describe("Router unit tests", func() {
 					return request.Success(http.StatusAccepted, "OK")
 				}(req)
 
-				Expect(response.GetResponse().StatusCode).To(Equal(http.StatusAccepted))
-				Expect(response.GetResponse().Content).To(Equal([]byte("OK")))
+				Expect(response.(*request).response.StatusCode).To(Equal(http.StatusAccepted))
+				Expect(response.(*request).response.Content).To(Equal([]byte("OK")))
 			})
 		})
 
@@ -310,8 +310,8 @@ var _ = Describe("Router unit tests", func() {
 					return request.Error()
 				}(req)
 
-				Expect(response.GetResponse().StatusCode).To(Equal(http.StatusBadRequest))
-				Expect(response.GetResponse().Content).To(Equal([]byte("")))
+				Expect(response.(*request).response.StatusCode).To(Equal(http.StatusBadRequest))
+				Expect(response.(*request).response.Content).To(Equal([]byte("")))
 			})
 		})
 
@@ -323,8 +323,8 @@ var _ = Describe("Router unit tests", func() {
 					return request.Error(http.StatusUnauthorized, "OK")
 				}(req)
 
-				Expect(response.GetResponse().StatusCode).To(Equal(http.StatusUnauthorized))
-				Expect(response.GetResponse().Content).To(Equal([]byte("OK")))
+				Expect(response.(*request).response.StatusCode).To(Equal(http.StatusUnauthorized))
+				Expect(response.(*request).response.Content).To(Equal([]byte("OK")))
 			})
 		})
 
@@ -337,7 +337,7 @@ var _ = Describe("Router unit tests", func() {
 					return request.Success()
 				}(req)
 
-				Expect(response.GetResponse().Headers["Custom-Response-Header"]).To(Equal("Set"))
+				Expect(response.(*request).response.Headers["Custom-Response-Header"]).To(Equal("Set"))
 			})
 		})
 	})
@@ -351,8 +351,8 @@ var _ = Describe("Router unit tests", func() {
 					return request.Redirect("/moved")
 				}(req)
 
-				Expect(response.GetResponse().StatusCode).To(Equal(302))
-				Expect(response.GetResponse().Redirect.Destination).To(Equal("/moved"))
+				Expect(response.(*request).response.StatusCode).To(Equal(302))
+				Expect(response.(*request).response.Redirect.Destination).To(Equal("/moved"))
 			})
 		})
 
@@ -364,8 +364,8 @@ var _ = Describe("Router unit tests", func() {
 					return request.PermanentRedirect("/moved permanently")
 				}(req)
 
-				Expect(response.GetResponse().StatusCode).To(Equal(301))
-				Expect(response.GetResponse().Redirect.Destination).To(Equal("/moved permanently"))
+				Expect(response.(*request).response.StatusCode).To(Equal(301))
+				Expect(response.(*request).response.Redirect.Destination).To(Equal("/moved permanently"))
 			})
 		})
 	})
@@ -381,8 +381,8 @@ var _ = Describe("Router unit tests", func() {
 					return request.Success(request.GetReferer())
 				}(req)
 
-				Expect(response.GetResponse().StatusCode).To(Equal(http.StatusOK))
-				Expect(response.GetResponse().Content).To(Equal([]byte("https://example.org")))
+				Expect(response.(*request).response.StatusCode).To(Equal(http.StatusOK))
+				Expect(response.(*request).response.Content).To(Equal([]byte("https://example.org")))
 			})
 		})
 	})
@@ -396,7 +396,7 @@ var _ = Describe("Router unit tests", func() {
 					return request.Success()
 				}(req)
 
-				Expect(response.GetResponse().Content).To(Equal([]byte("")))
+				Expect(response.(*request).response.Content).To(Equal([]byte("")))
 			})
 		})
 
@@ -408,7 +408,7 @@ var _ = Describe("Router unit tests", func() {
 					return request.Success(true)
 				}(req)
 
-				Expect(response.GetResponse().Content).To(Equal([]byte("true")))
+				Expect(response.(*request).response.Content).To(Equal([]byte("true")))
 			})
 		})
 
@@ -420,7 +420,7 @@ var _ = Describe("Router unit tests", func() {
 					return request.Success(false)
 				}(req)
 
-				Expect(response.GetResponse().Content).To(Equal([]byte("false")))
+				Expect(response.(*request).response.Content).To(Equal([]byte("false")))
 			})
 		})
 
@@ -432,7 +432,7 @@ var _ = Describe("Router unit tests", func() {
 					return request.Success("string test")
 				}(req)
 
-				Expect(response.GetResponse().Content).To(Equal([]byte("string test")))
+				Expect(response.(*request).response.Content).To(Equal([]byte("string test")))
 			})
 		})
 
@@ -444,7 +444,7 @@ var _ = Describe("Router unit tests", func() {
 					return request.Success(8)
 				}(req)
 
-				Expect(response.GetResponse().Content).To(Equal([]byte("8")))
+				Expect(response.(*request).response.Content).To(Equal([]byte("8")))
 			})
 		})
 
@@ -456,7 +456,7 @@ var _ = Describe("Router unit tests", func() {
 					return request.Success(5.6)
 				}(req)
 
-				Expect(response.GetResponse().Content).To(Equal([]byte("5.6")))
+				Expect(response.(*request).response.Content).To(Equal([]byte("5.6")))
 			})
 		})
 
@@ -468,7 +468,7 @@ var _ = Describe("Router unit tests", func() {
 					return request.Success(struct{Status string}{Status: "success"})
 				}(req)
 
-				Expect(response.GetResponse().Content).To(Equal([]byte(`{"Status":"success"}`)))
+				Expect(response.(*request).response.Content).To(Equal([]byte(`{"Status":"success"}`)))
 			})
 		})
 
@@ -480,7 +480,7 @@ var _ = Describe("Router unit tests", func() {
 					return request.Success([]byte("byte slice content"))
 				}(req)
 
-				Expect(response.GetResponse().Content).To(Equal([]byte("byte slice content")))
+				Expect(response.(*request).response.Content).To(Equal([]byte("byte slice content")))
 			})
 		})
 
@@ -493,7 +493,7 @@ var _ = Describe("Router unit tests", func() {
 					return request.Success(t)
 				}(req)
 
-				Expect(response.GetResponse().Content).To(Equal([]byte("1981-12-03 13:00:00")))
+				Expect(response.(*request).response.Content).To(Equal([]byte("1981-12-03 13:00:00")))
 			})
 		})
 	})
