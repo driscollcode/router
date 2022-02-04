@@ -15,7 +15,7 @@ type Base struct {
 
 func (b *Base) Setup() {
 	b.Log = log.New()
-	b.Params = &parameters.Params{}
+	b.Params = parameters.New()
 
 	if len(b.Params.String("ProjectID")) < 1 {
 		b.Log.Error("Handler Base : Setup was called without a ProjectID environment variable")

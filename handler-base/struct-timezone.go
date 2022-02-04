@@ -6,7 +6,7 @@ import (
 )
 
 func newTimeZone(timeZone string) *fetcher {
-	return &fetcher{log: &log.Log{}}
+	return &fetcher{log: log.New()}
 }
 
 type fetcher struct {
