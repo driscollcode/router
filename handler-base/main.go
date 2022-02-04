@@ -14,7 +14,7 @@ type Base struct {
 }
 
 func (b *Base) Setup() {
-	b.Log = &log.Log{}
+	b.Log = log.New()
 	b.Params = &parameters.Params{}
 
 	if len(b.Params.String("ProjectID")) < 1 {
