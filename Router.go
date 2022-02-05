@@ -3,9 +3,14 @@ package router
 import (
 	"errors"
 	"fmt"
+	stdLog "log"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"strings"
+	"time"
+	"github.com/driscollcode/tls-self-sign/certificate-request"
+	tlsSelfSign "github.com/driscollcode/tls-self-sign"
 )
 
 type Router struct {
@@ -56,6 +61,22 @@ func (r *Router) url(method, path string, handler Handler) {
 
 func (rt *Router) Serve(port int) error {
 	return http.ListenAndServe(fmt.Sprintf(":%d", port), rt)
+}
+
+func (rt *Router) ServeWithSSL(port int, key, cert string) error {
+	var err error
+	if len(key) < 1 || len(cert) < 1 {
+		if key, cert, err = rt.generateTLSCerts(); err != nil {
+			return err
+		}
+	}
+
+	suppression := stdLog.New(ioutil.Discard, "/", 0)
+	s := http.Server{}
+	s.Addr = fmt.Sprintf(":%d", port)
+	s.Handler = rt
+	s.ErrorLog = suppression
+	return s.ListenAndServeTLS(cert, key)
 }
 
 func (rt *Router) ServeIP(ip string, port int) error {
@@ -176,4 +197,21 @@ func (r *Router) corsInjector(w http.ResponseWriter) {
 	w.Header().Set("Access-Control-Allow-Headers", "*")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Access-Control-Allow-Methods", "GET,POST,PUT,PATCH,DELETE,OPTIONS")
+}
+
+func (r *Router) generateTLSCerts() (string, string, error) {
+	req := certificateRequest.New(time.Now().AddDate(0, 2, 0))
+	output, err := tlsSelfSign.Generate(req)
+	if err != nil {
+		return "", "", fmt.Errorf("Could not generate certificate: %v", err)
+	}
+
+	if err = ioutil.WriteFile("private.key", []byte(output.PrivateKey), 0660); err != nil {
+		return "", "", fmt.Errorf("Could not save private key: %v", err)
+	}
+
+	if err = ioutil.WriteFile("self.cert", []byte(output.Certificate), 0660); err != nil {
+		return "", "", fmt.Errorf("Could not save certificate: %v", err)
+	}
+	return "private.key", "self.cert", nil
 }
