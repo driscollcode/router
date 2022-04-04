@@ -92,7 +92,6 @@ func (rt *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	foundHandler, params, err := rt.findHandler(r)
 	if err != nil {
-
 		if rt.notFound != nil {
 			foundHandler = rt.notFound
 		} else {

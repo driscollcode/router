@@ -183,18 +183,3 @@ The ``router.Request`` type is an interface and can be used to generate mocks fo
 type MockRequest interface {
 	router.Request
 }
-```
-
-### Create Request
-
-The ``CreateRequest`` method provides a simple way to create a request struct. Arguments are
-
-* ``method (string)`` - any valid HTTP method
-* ``path (string)`` - URL path
-* ``body ([]byte)`` - the request body
-* ``params (map[string]string)`` - A map of parameters the router would have found from the URL
-
-Use the ``CreateRequestAdvanced`` method if you need more control over your request. Arguments are
-
-* ``request (*http.Request)`` - an http.Request struct - recommend you create with ``httptest.NewRequest()``
-* ``params (map[string]string)`` - A map of parameters the router would have found from the URL

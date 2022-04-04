@@ -39,6 +39,7 @@ type Request interface {
 	GetResponseHeaders() map[string]string
 	GetResponseContent() []byte
 	GetResponseRedirect() string
+	GetResponseWriter() http.ResponseWriter
 }
 
 func createRequest(method, path string, body []byte, params map[string]string) Request {
@@ -51,6 +52,7 @@ func createRequestAdvanced(req *http.Request, params map[string]string) Request 
 
 type request struct {
 	input                *http.Request
+	output               http.ResponseWriter
 	args                 map[string]string
 	Host, URL, UserAgent string
 	body                 struct {
@@ -59,6 +61,10 @@ type request struct {
 		processed bool
 	}
 	response
+}
+
+func (r *request) GetResponseWriter() http.ResponseWriter {
+	return r.output
 }
 
 func (r *request) GetHost() string {

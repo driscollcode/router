@@ -14,6 +14,8 @@ func getUser(request router.Request) router.Response {
 		return request.Error("Name parameter is missing")
 	}
 
+	request.GetResponseWriter().Write([]byte("Pre Message\n"))
+
 	// fetch user from somewhere
 	user := struct{ Name string }{Name: request.GetArg("name")}
 
