@@ -17,20 +17,23 @@ func main() {
 	r.Serve(80)
 }
 
-func getUser(request router.Request) router.Response {
-    if !request.ArgExists("name") {
-        return request.Error("Name parameter is missing")
+func getUser(call router.Call) router.Call {
+    if !call.ArgExists("name") {
+        return call.Error("Name parameter is missing")
     }
     
     // fetch user from somewhere
-    user := struct{Name string}{Name: request.GetArg("name")}
+    user := struct{Name string}{Name: call.GetArg("name")}
     
     // Automatically send out a struct as the response body with a 200 status code
-    return request.Success(user)
+    return call.Success(user)
 }
 ```
 
 ### Request Response Functions
+
+Todo - modernise
+
 
 The following functions are part of the ``Request`` struct and can be the return value of a handler function.
 The ``response`` parameters can be any inbuilt type (including ``[]byte``) or any struct that can be marshalled 

@@ -3,14 +3,14 @@ package router
 import (
 	"errors"
 	"fmt"
-	stdLog "log"
+	tlsSelfSign "github.com/driscollcode/tls-self-sign"
+	"github.com/driscollcode/tls-self-sign/certificate-request"
 	"io/ioutil"
+	stdLog "log"
 	"net/http"
 	"os"
 	"strings"
 	"time"
-	"github.com/driscollcode/tls-self-sign/certificate-request"
-	tlsSelfSign "github.com/driscollcode/tls-self-sign"
 )
 
 type Router struct {
@@ -102,8 +102,14 @@ func (rt *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	req := request{input: r, args: params, Host: r.Host, URL: r.URL.Path, UserAgent: r.Header.Get("User-Agent")}
-	response := foundHandler(&req).(*request).response
+	myCall := call{response: Response{}}
+	myCall.input = r
+	myCall.args = params
+	myCall.Host = r.Host
+	myCall.URL = r.URL.Path
+	myCall.UserAgent = r.Header.Get("User-Agent")
+
+	resp := foundHandler(&myCall).(*call)
 
 	if len(os.Getenv("BuildDate")) > 0 {
 		w.Header().Set("X-Build-Date", os.Getenv("BuildDate"))
@@ -111,17 +117,17 @@ func (rt *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	rt.corsInjector(w)
 
-	if response.Redirect.DoRedirect {
-		http.Redirect(w, r, response.Redirect.Destination, response.StatusCode)
+	if resp.response.Redirect.DoRedirect {
+		http.Redirect(w, r, resp.response.Redirect.Destination, resp.response.StatusCode)
 		return
 	}
 
-	for key, val := range response.Headers {
+	for key, val := range resp.response.Headers {
 		w.Header().Set(key, val)
 	}
 
-	w.WriteHeader(response.StatusCode)
-	w.Write(response.Content)
+	w.WriteHeader(resp.response.StatusCode)
+	w.Write(resp.response.Content)
 }
 
 func (rt *Router) findHandler(r *http.Request) (Handler, map[string]string, error) {
