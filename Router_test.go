@@ -24,8 +24,8 @@ var _ = Describe("Router unit tests", func() {
 		When("the router is matching a route to a handler", func() {
 			When("the method is GET", func() {
 				It("should pair a matching request to the appropriate GET handler", func() {
-					router.Get("/", func(call Call) Call {
-						return call.Success("OK")
+					router.Get("/", func(request Request) Response {
+						return request.Success("OK")
 					})
 
 					r := httptest.NewRequest("GET", "/", nil)
@@ -37,8 +37,8 @@ var _ = Describe("Router unit tests", func() {
 				})
 
 				It("should not pair a matching request to the GET handler if the method is not GET", func() {
-					router.Get("/", func(call Call) Call {
-						return call.Success("OK")
+					router.Get("/", func(request Request) Response {
+						return request.Success("OK")
 					})
 
 					r := httptest.NewRequest("POST", "/", nil)
@@ -51,8 +51,8 @@ var _ = Describe("Router unit tests", func() {
 
 			When("the method is POST", func() {
 				It("should pair a matching request to the appropriate POST handler", func() {
-					router.Post("/", func(call Call) Call {
-						return call.Success("OK")
+					router.Post("/", func(request Request) Response {
+						return request.Success("OK")
 					})
 
 					r := httptest.NewRequest("POST", "/", nil)
@@ -64,8 +64,8 @@ var _ = Describe("Router unit tests", func() {
 				})
 
 				It("should not pair a matching request to the POST handler if the method is not POST", func() {
-					router.Post("/", func(call Call) Call {
-						return call.Success("OK")
+					router.Post("/", func(request Request) Response {
+						return request.Success("OK")
 					})
 
 					r := httptest.NewRequest("GET", "/", nil)
@@ -78,8 +78,8 @@ var _ = Describe("Router unit tests", func() {
 
 			When("the method is PUT", func() {
 				It("should pair a matching request to the appropriate PUT handler", func() {
-					router.Put("/", func(call Call) Call {
-						return call.Success("OK")
+					router.Put("/", func(request Request) Response {
+						return request.Success("OK")
 					})
 
 					r := httptest.NewRequest("PUT", "/", nil)
@@ -91,8 +91,8 @@ var _ = Describe("Router unit tests", func() {
 				})
 
 				It("should not pair a matching request to the PUT handler if the method is not PUT", func() {
-					router.Put("/", func(call Call) Call {
-						return call.Success("OK")
+					router.Put("/", func(request Request) Response {
+						return request.Success("OK")
 					})
 
 					r := httptest.NewRequest("POST", "/", nil)
@@ -105,8 +105,8 @@ var _ = Describe("Router unit tests", func() {
 
 			When("the method is PATCH", func() {
 				It("should pair a matching request to the appropriate PATCH handler", func() {
-					router.Patch("/", func(call Call) Call {
-						return call.Success("OK")
+					router.Patch("/", func(request Request) Response {
+						return request.Success("OK")
 					})
 
 					r := httptest.NewRequest("PATCH", "/", nil)
@@ -118,8 +118,8 @@ var _ = Describe("Router unit tests", func() {
 				})
 
 				It("should not pair a matching request to the PATCH handler if the method is not PATCH}", func() {
-					router.Patch("/", func(call Call) Call {
-						return call.Success("OK")
+					router.Patch("/", func(request Request) Response {
+						return request.Success("OK")
 					})
 
 					r := httptest.NewRequest("POST", "/", nil)
@@ -132,8 +132,8 @@ var _ = Describe("Router unit tests", func() {
 
 			When("the method is DELETE", func() {
 				It("should pair a matching request to the appropriate DELETE handler", func() {
-					router.Delete("/", func(call Call) Call {
-						return call.Success("OK")
+					router.Delete("/", func(request Request) Response {
+						return request.Success("OK")
 					})
 
 					r := httptest.NewRequest("DELETE", "/", nil)
@@ -145,8 +145,8 @@ var _ = Describe("Router unit tests", func() {
 				})
 
 				It("should not pair a matching request to the DELETE handler if the method is not DELETE", func() {
-					router.Delete("/", func(call Call) Call {
-						return call.Success("OK")
+					router.Delete("/", func(request Request) Response {
+						return request.Success("OK")
 					})
 
 					r := httptest.NewRequest("POST", "/", nil)
@@ -159,8 +159,8 @@ var _ = Describe("Router unit tests", func() {
 
 			When("the method is arbritary", func() {
 				It("should pair a matching request to the appropriate handler", func() {
-					router.Route("CUSTOM", "/", func(call Call) Call {
-						return call.Success("OK")
+					router.Route("CUSTOM", "/", func(request Request) Response {
+						return request.Success("OK")
 					})
 
 					r := httptest.NewRequest("CUSTOM", "/", nil)
@@ -172,8 +172,8 @@ var _ = Describe("Router unit tests", func() {
 				})
 
 				It("should not pair a matching request to the handler if the method is not the right one", func() {
-					router.Route("CUSTOM", "/", func(call Call) Call {
-						return call.Success("OK")
+					router.Route("CUSTOM", "/", func(request Request) Response {
+						return request.Success("OK")
 					})
 
 					r := httptest.NewRequest("POST", "/", nil)
@@ -188,8 +188,8 @@ var _ = Describe("Router unit tests", func() {
 		When("the router is given a defined route", func() {
 			When("the request matches the defined route", func() {
 				It("should serve up the correct handler function", func() {
-					router.Get("/defined/route", func(call Call) Call {
-						return call.Success("matched route")
+					router.Get("/defined/route", func(request Request) Response {
+						return request.Success("matched route")
 					})
 
 					r := httptest.NewRequest("GET", "/defined/route", nil)
@@ -203,8 +203,8 @@ var _ = Describe("Router unit tests", func() {
 
 			When("the request does not match the defined route", func() {
 				It("should serve up a 404 response", func() {
-					router.Get("/defined/route", func(call Call) Call {
-						return call.Success("matched route")
+					router.Get("/defined/route", func(request Request) Response {
+						return request.Success("matched route")
 					})
 
 					r := httptest.NewRequest("GET", "/undefined/route", nil)
@@ -219,11 +219,11 @@ var _ = Describe("Router unit tests", func() {
 
 		When("the router is matching a URL parameter", func() {
 			It("should be able to find the parameter correctly", func() {
-				router.Get("/url/param/:one", func(call Call) Call {
-					if call.ArgExists("one") {
-						return call.Success(call.GetArg("one"))
+				router.Get("/url/param/:one", func(request Request) Response {
+					if request.ArgExists("one") {
+						return request.Success(request.GetArg("one"))
 					}
-					return call.Error("fault")
+					return request.Error("fault")
 				})
 
 				r := httptest.NewRequest("GET", "/url/param/working", nil)
@@ -237,8 +237,8 @@ var _ = Describe("Router unit tests", func() {
 
 		When("the router is given a URL prefix via the Root() method", func() {
 			It("should store the URL prefix to attach to any other routes", func() {
-				router.Get("/here", func(call Call) Call {
-					return call.Success("OK")
+				router.Get("/here", func(request Request) Response {
+					return request.Success("OK")
 				})
 
 				router.Root("/my/url/prefix")
@@ -254,8 +254,8 @@ var _ = Describe("Router unit tests", func() {
 
 		When("the router is serving up an error state", func() {
 			It("should return an HTTP bad request code", func() {
-				router.Get("/", func(call Call) Call {
-					return call.Error(nil)
+				router.Get("/", func(request Request) Response {
+					return request.Error(nil)
 				})
 
 				r := httptest.NewRequest("GET", "/", nil)
@@ -268,8 +268,8 @@ var _ = Describe("Router unit tests", func() {
 
 		When("the router is given a NotFound function", func() {
 			It("should serve that function whenever a URL is not defined as a route", func() {
-				router.NotFound(func(call Call) Call {
-					return call.Success("not found handled correctly")
+				router.NotFound(func(request Request) Response {
+					return request.Success("not found handled correctly")
 				})
 
 				r := httptest.NewRequest("GET", "/some/url/which/is/not/a/defined/route", nil)

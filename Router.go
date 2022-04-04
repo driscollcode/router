@@ -102,14 +102,15 @@ func (rt *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	myCall := call{response: Response{}}
-	myCall.input = r
-	myCall.args = params
-	myCall.Host = r.Host
-	myCall.URL = r.URL.Path
-	myCall.UserAgent = r.Header.Get("User-Agent")
+	req := request{
+		input:     r,
+		args:      params,
+		Host:      r.Host,
+		URL:       r.URL.Path,
+		UserAgent: r.Header.Get("User-Agent"),
+	}
 
-	resp := foundHandler(&myCall).(*call)
+	resp := foundHandler(&req)
 
 	if len(os.Getenv("BuildDate")) > 0 {
 		w.Header().Set("X-Build-Date", os.Getenv("BuildDate"))
@@ -117,17 +118,17 @@ func (rt *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	rt.corsInjector(w)
 
-	if resp.response.Redirect.DoRedirect {
-		http.Redirect(w, r, resp.response.Redirect.Destination, resp.response.StatusCode)
+	if len(resp.GetResponseRedirect()) > 0 {
+		http.Redirect(w, r, resp.GetResponseRedirect(), resp.GetResponseStatusCode())
 		return
 	}
 
-	for key, val := range resp.response.Headers {
+	for key, val := range resp.GetResponseHeaders() {
 		w.Header().Set(key, val)
 	}
 
-	w.WriteHeader(resp.response.StatusCode)
-	w.Write(resp.response.Content)
+	w.WriteHeader(resp.GetResponseStatusCode())
+	w.Write(resp.GetResponseContent())
 }
 
 func (rt *Router) findHandler(r *http.Request) (Handler, map[string]string, error) {
