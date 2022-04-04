@@ -4,8 +4,7 @@ import "github.com/driscollcode/router"
 
 func main() {
 	r := router.Router{}
-	getUser(getUser(router.CreateRequest("GET", "/", nil, nil)))
-	r.Get("/user/:name", getUser)
+	r.Get("/:name", getUser)
 	r.Serve(80)
 }
 
