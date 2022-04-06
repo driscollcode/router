@@ -57,6 +57,11 @@ var _ = Describe("Router unit tests", func() {
 				Expect(req.ArgExists("unsetParameter")).To(BeFalse())
 			})
 
+			It("should cause the ArgExists method to return boolean false even if it is populated blank", func() {
+				req := createRequest("GET", "/", nil, map[string]string{"parameterOne": ""})
+				Expect(req.ArgExists("parameterOne")).To(BeFalse())
+			})
+
 			It("should be represented as the empty string when calling the GetArg method", func() {
 				req := createRequest("GET", "/", nil, nil)
 				Expect(req.GetArg("unsetParameter")).To(Equal(""))

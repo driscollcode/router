@@ -74,8 +74,14 @@ func (r *request) GetUserAgent() string {
 }
 
 func (r *request) ArgExists(name string) bool {
-	_, exists := r.args[name]
-	return exists
+	if _, exists := r.args[name]; !exists {
+		return false
+	}
+
+	if len(r.args[name]) < 1 {
+		return false
+	}
+	return true
 }
 
 func (r *request) GetArg(name string) string {
