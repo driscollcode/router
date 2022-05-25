@@ -127,7 +127,7 @@ func myHandler(request router.Request) router.Response {
 
 ## Testing
 
-Have a look in the [a relative link](testing-examples) folder for some working sample code which uses mock requests 
+Have a look in the [testing-examples/mockgen](testing-examples/mockgen) folder for some working sample code which uses mock requests 
 to unit test a handler.
 
 ### Mock Requests
