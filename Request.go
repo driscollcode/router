@@ -242,7 +242,7 @@ func (r *request) getContentAsByte(content interface{}) []byte {
 	switch reflect.ValueOf(content).Kind() {
 	case reflect.Struct:
 		if _, ok := content.(time.Time); ok {
-			return []byte(fmt.Sprintf("%s", content.(time.Time).Format("2006-01-02 15:04:05")))
+			return []byte(content.(time.Time).Format("2006-01-02 15:04:05"))
 		}
 
 		if myBytes, err := json.Marshal(content); err == nil {
