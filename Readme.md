@@ -107,25 +107,28 @@ func main() {
 }
 
 func preware(handler router.Handler) router.Handler {
-	return func(request router.Request) router.Request {
+	return func(request router.Request) router.Response {
 		request.Success(201, "pre processed content - ")
 		return handler(request)
 	}
 }
 
 func postware(handler router.Handler) router.Handler {
-	return func(request router.Request) router.Request {
+	return func(request router.Request) router.Response {
 		request = handler(request)
 		return request.Response(" - post processed content")
 	}
 }
 
-func myHandler(request router.Request) router.Request {
+func myHandler(request router.Request) router.Response {
 	return request.Response("interesting content")
 }
 ```
 
 ## Testing
+
+Have a look in the [a relative link](testing-examples) folder for some working sample code which uses mock requests 
+to unit test a handler.
 
 ### Mock Requests
 
@@ -142,44 +145,20 @@ import (
 
 func main() {
 	response := getUser(router.CreateRequest("GET", "/some/url", nil, map[string]string{"name": "John"}))
-	fmt.Println(response.StatusCode, ":", string(response.Content))
+	fmt.Println(response.GetResponseStatusCode(), ":", string(response.GetResponseContent()))
 }
 
 func getUser(request router.Request) router.Response {
-    if !request.ArgExists("name") {
-        return request.Error("Name parameter is missing")
-    }
-    
-    // fetch user from somewhere
-    user := struct{Name string}{Name: request.GetArg("name")}
-    
-    // Automatically send out a struct as the response body with a 200 status code
-    return request.Success(user)
-}
-```
-
-This example shows how easy it is to create a request and supply it to a handler. Responses are also
-structured to permit easy examination in unit tests. The structure is as follows:
-
-```go
-type Response struct {
-	StatusCode int
-	Content    []byte
-	Redirect   struct {
-		DoRedirect  bool
-		Destination string
+	if !request.ArgExists("name") {
+		return request.Error("Name parameter is missing")
 	}
+
+	// fetch user from somewhere
+	user := struct{ Name string }{Name: request.GetArg("name")}
+
+	// Automatically send out a struct as the response body with a 200 status code
+	return request.Success(user)
 }
 ```
 
-Given this structure, it is easy to test the response returned by any handler.
-
-### With Interface Generated Mocks
-
-The ``router.Request`` type is an interface and can be used to generate mocks for unit tests eg.
-
-```go
-//go:generate mockgen -destination=mock-request.go -package=mocks . MockRequest
-type MockRequest interface {
-	router.Request
-}
+This example shows how easy it is to create a request and supply it to a handler.
