@@ -96,7 +96,9 @@ func (rt *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			foundHandler = rt.notFound
 		} else {
 			w.WriteHeader(404)
-			w.Write([]byte("No provider could be found"))
+			if _, err = w.Write([]byte("No provider could be found")); err != nil {
+				fmt.Printf("Error writing HTTP response : %s\n", err.Error())
+			}
 			return
 		}
 	}
@@ -127,7 +129,9 @@ func (rt *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(resp.GetResponseStatusCode())
-	w.Write(resp.GetResponseContent())
+	if _, err = w.Write(resp.GetResponseContent()); err != nil {
+		fmt.Printf("Error writing HTTP response : %s\n", err.Error())
+	}
 }
 
 func (rt *Router) findHandler(r *http.Request) (Handler, map[string]string, error) {
