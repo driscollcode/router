@@ -63,7 +63,7 @@ func (rt *Router) Serve(port int) error {
 	return http.ListenAndServe(fmt.Sprintf(":%d", port), rt)
 }
 
-func (rt *Router) ServeWithSSL(port int, key, cert string) error {
+func (rt *Router) ServeWithTLS(port int, key, cert string) error {
 	var err error
 	if len(key) < 1 || len(cert) < 1 {
 		if key, cert, err = rt.generateTLSCerts(); err != nil {

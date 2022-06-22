@@ -178,6 +178,53 @@ You can also perform a quick redirect with these functions.
 * ``Redirect(destination string)`` - Perform a HTTP 302 redirect to the supplied destination
 * ``PermanentRedirect(destination string)`` - Perform a HTTP 301 redirect to the supplied destination
 
+## TLS And Self Signed Certificates
+
+The router makes it easy to serve requests over TLS. Simply specify your key and certificate
+as parameters to the `ServeWithTLS` method.
+
+```go
+package main
+
+import "github.com/driscollcode/router"
+
+func main() {
+	r := router.Router{}
+	r.Get("/failure/example", fail)
+	r.ServeWithTLS(80, "--- my key ---", "--- my certificate ---")
+}
+
+func fail(request router.Request) router.Response {
+    return request.Error(500, "this is an example of a failure response")
+}
+// HTTP response is 500:this is an example of a failure response
+```
+
+### Automatic Self Signed Certificates
+
+If you leave the key and certificate parameters blank in your call to `ServeWithTLS`, the router will
+automatically generate a self signed certificate for you
+
+In the example below, a self singed certificate will be generated instantly and used to serve
+requests.
+
+```go
+package main
+
+import "github.com/driscollcode/router"
+
+func main() {
+	r := router.Router{}
+	r.Get("/failure/example", fail)
+	r.ServeWithTLS(80, "", "")
+}
+
+func fail(request router.Request) router.Response {
+    return request.Error(500, "this is an example of a failure response")
+}
+// HTTP response is 500:this is an example of a failure response
+```
+
 ## Testing
 
 ### Mockgen
