@@ -17,37 +17,74 @@ func main() {
 	r.Serve(80)
 }
 
+// User navigates to /user/bob in browser
 func getUser(request router.Request) router.Response {
     if !request.ArgExists("name") {
         return request.Error("Name parameter is missing")
     }
     
-    // fetch user from somewhere
+    // Create a new user struct based on URL parameters
     user := struct{Name string}{Name: request.GetArg("name")}
     
     // Automatically send out a struct as the response body with a 200 status code
     return request.Success(user)
 }
+// HTTP response is 200:{"Name":"bob"}
 ```
 
-### Request Response Functions
+### Specify An HTTP Status Code
+```go
+package main
 
-Todo - modernise
+import "github.com/driscollcode/router"
 
+func main() {
+	r := router.Router{}
+	r.Get("/basic/example", basic)
+	r.Serve(80)
+}
 
-The following functions are part of the ``Request`` struct and can be the return value of a handler function.
-The ``response`` parameters can be any inbuilt type (including ``[]byte``) or any struct that can be marshalled 
-to json. To respond with a specific HTTP status code, supply that as the first parameter to either the 
-``Error`` or ``Success`` function.
+func basic(request router.Request) router.Response {
+    return request.Success(201, "this is a 201 response")
+}
+// HTTP response is 201:this is a 201 response
+```
 
-* ``Error(response ...interface{})`` - HTTP 400 (Bad Request) response with the supplied content
-* ``Success(response ...interface{})`` - HTTP 200 OK response with the supplied content
-* ``Response(response ...interface{})`` - Set response content without specifying an HTTP status code (see Middleware).
+### Failed Response
+```go
+package main
 
-You can also perform a quick redirect with these functions.
+import "github.com/driscollcode/router"
 
-* ``Redirect(destination string)`` - Perform a HTTP 302 redirect to the supplied destination
-* ``PermanentRedirect(destination string)`` - Perform a HTTP 301 redirect to the supplied destination
+func main() {
+	r := router.Router{}
+	r.Get("/failure/example", fail)
+	r.Serve(80)
+}
+
+func fail(request router.Request) router.Response {
+    return request.Error("this is an example of a failure response")
+}
+// HTTP response is 400:this is an example of a failure response
+```
+
+### Failed Response With Custom HTTP Status Code
+```go
+package main
+
+import "github.com/driscollcode/router"
+
+func main() {
+	r := router.Router{}
+	r.Get("/failure/example", fail)
+	r.Serve(80)
+}
+
+func fail(request router.Request) router.Response {
+    return request.Error(500, "this is an example of a failure response")
+}
+// HTTP response is 500:this is an example of a failure response
+```
 
 ### Request Functions
 
@@ -125,7 +162,25 @@ func myHandler(request router.Request) router.Response {
 }
 ```
 
+### Response Functions
+
+The following functions are part of the ``Request`` struct and can be the return value of a handler function.
+The ``response`` parameters can be any inbuilt type (including ``[]byte``) or any struct that can be marshalled
+to json. To respond with a specific HTTP status code, supply that as the first parameter to either the
+``Error`` or ``Success`` function. The default status codes are shown below.
+
+* ``Error(response ...interface{})`` - HTTP 400 (Bad Request) response with the supplied content
+* ``Success(response ...interface{})`` - HTTP 200 OK response with the supplied content
+* ``Response(response ...interface{})`` - Set response content without specifying an HTTP status code (see Middleware).
+
+You can also perform a quick redirect with these functions.
+
+* ``Redirect(destination string)`` - Perform a HTTP 302 redirect to the supplied destination
+* ``PermanentRedirect(destination string)`` - Perform a HTTP 301 redirect to the supplied destination
+
 ## Testing
+
+### Mockgen
 
 Have a look in the [testing-examples/mockgen](testing-examples/mockgen) folder for some working sample code which uses mock requests 
 to unit test a handler.
